@@ -1,0 +1,365 @@
+<!DOCTYPE html> <!-- Declare the HTML5 doctype -->
+<html>
+  <head>
+    <title>Reel Local Homepage</title> <!-- Page title shown in browser tab -->
+    <link rel="stylesheet" href="lib/style.css" /> <!-- Link to custom stylesheet -->
+    <!-- Font Awesome for icons (e.g. calendar, users, etc.) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <!-- Vue.js 2 library (for frontend reactivity) -->
+    <script src="https://unpkg.com/vue@2" crossorigin="anonymous"></script>
+    <!-- Brython for running Python in the browser -->
+    <script src="https://cdn.jsdelivr.net/npm/brython@3/brython.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3/brython_stdlib.js"></script>
+  </head>
+  <body onload="brython()"> <!-- Initialize Brython when page loads -->
+    <div id="app" v-cloak> <!-- Vue root element, hide until Vue is ready -->
+      <!-- Header & Sidebar -->
+      <div class="mainheader_container">
+        <h1 class="reellocal_title">Reel Local</h1> <!-- App title header -->
+      </div>
+      <div class="container">
+        <aside class="dd_menu"> <!-- Sidebar menu for navigation and login -->
+          <h2>Main Menu</h2>
+          <ul>
+            <!-- Show login form if user is NOT logged in -->
+            <li v-if="!isLoggedIn">
+              <form @submit.prevent="login" class="login-form"> <!-- Prevent default submit, use Vue method -->
+                <label>
+                  Username
+                  <input v-model="username" required /> <!-- Two-way bind username input -->
+                </label>
+                <br />
+                <label>
+                  Password
+                  <input type="password" v-model="password" required /> <!-- Two-way bind password input -->
+                </label>
+                <br />
+                <button type="submit" class="nav-button">Login</button> <!-- Login button -->
+                <p v-if="loginError" class="error-msg">{{ loginError }}</p> <!-- Show error if login fails -->
+              </form>
+            </li>
+            <!-- Main navigation when user is logged in -->
+            <template v-if="isLoggedIn">
+              <li>
+                <a href="#schedule" class="nav-button"
+                  ><i class="fa fa-calendar"></i> Schedule</a
+                >
+              </li>
+              <li>
+                <a href="#rsvp" class="nav-button"
+                  ><i class="fa fa-ticket"></i> RSVP</a
+                >
+              </li>
+              <li>
+                <a href="#meetups" class="nav-button"
+                  ><i class="fa fa-users"></i> Meetups</a
+                >
+              </li>
+              <li>
+                <a href="#myschedule" class="nav-button"
+                  ><i class="fa fa-clock-o"></i> My Schedule</a
+                >
+              </li>
+              <li>
+                <a href="#users" class="nav-button"
+                  ><i class="fa fa-user"></i> Other Users</a
+                >
+              </li>
+              <li>
+                <button @click="logout" class="nav-button">Logout</button> <!-- Logout button -->
+              </li>
+            </template>
+          </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+          <!-- Home section -->
+          <section id="home" class="content-section">
+            <h2>Welcome to Reel Local!</h2>
+            <p>
+              Discover classic and independent films, RSVP for screenings, and
+              connect with other film enthusiasts!
+            </p>
+          </section>
+
+          <!-- Schedule section: Show movies -->
+          <section id="schedule" class="content-section">
+            <h2>Now Showing</h2>
+            <div class="movies">
+              <!-- List all movies from movies array -->
+              <div class="movie" v-for="m in movies" :key="m.title">
+                <img
+                  :src="m.img"
+                  :alt="m.title"
+                  class="movie-img"
+                />
+                <button
+                  class="movie_butt"
+                  @click="selectMovie(m)"
+                >{{ m.title }}</button> <!-- Movie button shows title, triggers details -->
+              </div>
+            </div>
+
+            <!-- Show selected movie details when showDetails is true -->
+            <div
+              class="movie_details"
+              v-if="selectedMovie && showDetails"
+            >
+              <h3>{{ selectedMovie.title }}</h3>
+              <p><strong>Director:</strong> {{ selectedMovie.director }}</p>
+              <p><strong>Genre:</strong> {{ selectedMovie.genre }}</p>
+              <p><strong>Synopsis:</strong> {{ selectedMovie.synopsis }}</p>
+              <p><strong>Date:</strong> {{ selectedMovie.date }}</p>
+              <p><strong>Time:</strong> {{ selectedMovie.time }}</p>
+              <p><strong>Location:</strong> {{ selectedMovie.location }}</p>
+
+              <!-- List attendees (users who selected this movie) if logged in -->
+              <template v-if="isLoggedIn">
+                <h4>Other Attendees:</h4>
+                <ul>
+                  <li
+                    v-for="u in otherUsers"
+                    :key="u.loginName"
+                    v-if="u.selectedFilms && u.selectedFilms.includes(selectedMovie.title)"
+                  >
+                    {{ u.loginName }}
+                  </li>
+                </ul>
+                <!-- If no attendees, show a message -->
+                <p
+                  v-if="!otherUsers.some(
+                    u =>
+                      u.selectedFilms &&
+                      u.selectedFilms.includes(selectedMovie.title)
+                  )"
+                >
+                  No member has RSVP’d for this movie yet 🙂
+                </p>
+              </template>
+
+              <button
+                class="close_butt"
+                @click="closeMovieDetails"
+              >
+                Close
+              </button>
+            </div>
+          </section>
+
+          <!-- RSVP section: Allow logged-in users to RSVP for a screening -->
+          <section id="rsvp" class="content-section" v-if="isLoggedIn">
+            <h2>RSVP for a Screening</h2>
+            <form @submit.prevent="submitRSVP">
+              <label>
+                Movie:
+                <select v-model="rsvpMovie" required>
+                  <option disabled value="">-- choose --</option>
+                  <option
+                    v-for="m in movies"
+                    :key="m.title"
+                    :value="m.title"
+                  >
+                    {{ m.title }}
+                  </option>
+                </select>
+              </label>
+              <br />
+              <label>
+                Time:
+                <select v-model="rsvpTime" required>
+                  <option disabled value="">-- choose --</option>
+                  <option v-for="t in timeOptions" :key="t">{{ t }}</option>
+                </select>
+              </label>
+              
+              <br />
+              <button type="submit" class="save-btn">
+                Confirm RSVP
+              </button>
+            </form>
+          </section>
+
+          <!-- Meetups section: Arrange a meetup, invite members -->
+          <section id="meetups" class="content-section" v-if="isLoggedIn">
+            <h2>Arrange a Meetup</h2>
+            <form @submit.prevent="submitMeetup">
+              <label>
+                Name:
+                <input v-model="meetupName" required />
+              </label>
+              <br />
+              <label>
+                Day:
+                <select v-model="meetupDay">
+                  <option>Monday</option>
+                  <option>Tuesday</option>
+                  <option>Wednesday</option>
+                  <option>Thursday</option>
+                  <option>Friday</option>
+                  <option>Saturday</option>
+                  <option>Sunday</option>
+                </select>
+              </label>
+              <br />
+              <label>
+                Time:
+                <select v-model="meetupTime" required>
+                  <option disabled value="">-- choose --</option>
+                  <option v-for="t in timeOptions" :key="t">{{ t }}</option>
+                </select>
+              </label>
+              <br />
+              <fieldset>
+                <legend>Invite Members:</legend>
+                <!-- Show all other users with checkboxes to invite -->
+                <div
+                  v-for="u in otherUsers"
+                  :key="u.loginName"
+                  class="invite-option"
+                >
+                  <label>
+                    <input
+                      type="checkbox"
+                      :value="u.loginName"
+                      v-model="selectedMembers"
+                    />
+                    <strong>{{ u.loginName }}</strong>
+                  </label>
+                  <!-- Show their availability for easier meetup planning -->
+                  <ul>
+                    <li
+                      v-for="av in u.availability"
+                      :key="av.day + av.startTime"
+                    >
+                      {{ av.day }} @ {{ av.startTime }}
+                    </li>
+                  </ul>
+                </div>
+              </fieldset>
+              <br />
+              <button type="submit" class="save-btn">
+                Schedule Meetup
+              </button>
+            </form>
+          </section>
+
+          <!-- My Schedule section: User's movies, meetups, and availabilities -->
+          <section id="myschedule" class="content-section" v-if="isLoggedIn">
+            <h2>My Schedule</h2>
+
+            <!-- Movies booked -->
+            <h4>Movies:</h4>
+            <ul>
+              <li v-for="(m,i) in movieSchedule" :key="i">
+                {{ m.title }} @ {{ m.time }}
+                <button
+                  @click="cancelMovie(i)"
+                >
+                  Cancel
+                </button>
+              </li>
+            </ul>
+
+            <!-- Meetups booked -->
+            <h4>Meetups:</h4>
+            <ul>
+              <li v-for="(mt,i) in meetups" :key="i">
+                <div>
+                  <strong>{{ mt.title }}</strong>
+                  <!-- If your 'time' is like "Monday at 04:00", this splits it: -->
+                  <span> on {{ mt.time }}</span>
+                </div>
+                <div v-if="mt.invited && mt.invited.length">
+                  <span>Invited: </span>
+                  <span v-for="(person, idx) in mt.invited" :key="person">
+                    {{ person }}<span v-if="idx < mt.invited.length-1">, </span>
+                  </span>
+                </div>
+                <button @click="cancelMeetup(i)">Cancel</button>
+              </li>
+            </ul>
+
+
+            <!-- User's availability slots -->
+            <h4>Availability:</h4>
+            <ul>
+              <li v-for="(s,i) in availability" :key="i">
+                {{ s }}
+                <button
+                  @click="cancelAvailability(i)"
+                >
+                  Cancel
+                </button>
+              </li>
+            </ul>
+
+            <!-- Add new availability -->
+            <h4>Add Availability:</h4>
+            <form @submit.prevent="saveAvailability" class="availability-form">
+              <label>
+                Day:
+                <select v-model="availableDay">
+                  <option>Monday</option>
+                  <option>Tuesday</option>
+                  <option>Wednesday</option>
+                  <option>Thursday</option>
+                  <option>Friday</option>
+                  <option>Saturday</option>
+                  <option>Sunday</option>
+                </select>
+              </label>
+              <label>
+                Time:
+                <select v-model="availableStart" required>
+                  <option disabled value="">-- choose --</option>
+                  <option v-for="t in timeOptions" :key="t">{{ t }}</option>
+                </select>
+              </label>
+              <button type="submit" class="save-btn">Add</button>
+            </form>
+          </section>
+
+          <!-- Other Users section: See other users and their info -->
+          <section id="users" class="content-section" v-if="isLoggedIn">
+            <h2>Other Members</h2>
+            <div class="user-list">
+              <!-- For each user, show their details -->
+              <div class="user-card" v-for="u in otherUsers" :key="u.loginName">
+                <h3>{{ u.loginName }}</h3>
+                <p><strong>Attendances:</strong></p>
+                <ul>
+                  <li
+                    v-for="a in u.attendances"
+                    :key="a.date + a.time"
+                  >
+                    {{ a.date }} at {{ a.time }}
+                  </li>
+                </ul>
+                <p><strong>Availability:</strong></p>
+                <ul>
+                  <li
+                    v-for="av in u.availability"
+                    :key="av.day + av.startTime"
+                  >
+                    {{ av.day }} @ {{ av.startTime }}
+                  </li>
+                </ul>
+                <p><strong>Selected Films:</strong></p>
+                <ul>
+                  <li v-for="film in u.selectedFilms" :key="film">{{ film }}</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <!-- Python logic, loaded from external file -->
+      <script type="text/python" src="lib/python.py"></script>
+    </div>
+  </body>
+</html>
