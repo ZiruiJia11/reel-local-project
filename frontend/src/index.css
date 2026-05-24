@@ -124,3 +124,14 @@ a {
 
   margin: 0;
 }
+
+.movie-card {
+  cursor: pointer;
+
+  transition: .3s;
+}
+
+.movie-card:hover {
+  transform:
+    translateY(-8px);
+}

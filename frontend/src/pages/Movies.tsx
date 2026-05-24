@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom"
+
 const movies = [
   {
     title: "Citizen Kane",
@@ -26,6 +28,7 @@ const movies = [
 ]
 
 function Movies() {
+    const navigate = useNavigate()
   return (
     <div className="movie-grid">
 
@@ -34,7 +37,12 @@ function Movies() {
 
           <div
             className="movie-card"
-            key={movie.title}
+
+            onClick={() =>
+                navigate(
+                    `/movies/${movie.title}`
+                )
+            }
           >
 
             <img

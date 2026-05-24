@@ -5,8 +5,10 @@ import Layout from "./components/Layout"
 import Home from "./pages/Home"
 import Login from "./pages/Login"
 import Movies from "./pages/Movies"
+import MovieDetails from "./pages/MovieDetails"
 import Schedule from "./pages/Schedule"
 import Profile from "./pages/Profile"
+
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           <Route path="/movies" element={<Movies />} />
+          
+          <Route path="/movies/:id" element={<MovieDetails />} />
 
           <Route path="/schedule" element={<Schedule />} />
 
