@@ -1,7 +1,6 @@
 import {
   getBookings,
   clearBookings,
-  type Booking,
 } from "../services/bookingService"
 
 import { movies } from "../services/movieData"
