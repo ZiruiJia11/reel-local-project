@@ -1,5 +1,7 @@
 import { useParams } from "react-router-dom"
 import { movies } from "../services/movieData"
+import { addBooking } from "../services/bookingService"
+
 
 function MovieDetails() {
 
@@ -41,6 +43,15 @@ function MovieDetails() {
       <p>
         {movie.description}
       </p>
+
+      <button
+        onClick={() => {
+          addBooking(movie.id)
+          alert("Seat booked")
+        }}
+      >
+        Book a Seat
+      </button>
 
     </div>
   )
