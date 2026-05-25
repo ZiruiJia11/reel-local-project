@@ -1,23 +1,46 @@
 import { useParams } from "react-router-dom"
+import { movies } from "../services/movieData"
 
 function MovieDetails() {
 
   const { id } = useParams()
 
+  const movie =
+    movies.find(
+      m => m.id === id
+    )
+
+  if (!movie) {
+    return (
+      <h1>
+        Movie not found
+      </h1>
+    )
+  }
+
   return (
     <div>
 
+      <img
+        src={movie.image}
+        width="300"
+      />
+
       <h1>
-        Movie Details
+        {movie.title}
       </h1>
 
       <p>
-        Selected movie:
+        {movie.genre}
       </p>
 
-      <h2>
-        {id}
-      </h2>
+      <p>
+        {movie.duration}
+      </p>
+
+      <p>
+        {movie.description}
+      </p>
 
     </div>
   )
