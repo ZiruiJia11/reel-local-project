@@ -40,9 +40,14 @@ function Navbar() {
           Movies
         </Link>
 
-        <Link to="/schedule">
-          Schedule
-        </Link>
+        {
+          user &&
+          (
+            <Link to="/schedule">
+              Schedule
+            </Link>
+          )
+        }
 
         {
           user &&
