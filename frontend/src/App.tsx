@@ -8,6 +8,7 @@ import Movies from "./pages/Movies"
 import MovieDetails from "./pages/MovieDetails"
 import Schedule from "./pages/Schedule"
 import Profile from "./pages/Profile"
+import ProtectedRoute from "./components/ProtectedRoute"
 
 
 function App() {
@@ -26,9 +27,9 @@ function App() {
           
           <Route path="/movies/:id" element={<MovieDetails />} />
 
-          <Route path="/schedule" element={<Schedule />} />
-
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/schedule" element={<ProtectedRoute><Schedule /></ProtectedRoute>} />
+    
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
         </Routes>
 
