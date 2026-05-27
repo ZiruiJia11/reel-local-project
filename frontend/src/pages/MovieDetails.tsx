@@ -1,11 +1,15 @@
 import { useParams } from "react-router-dom"
 import { movies } from "../services/movieData"
 import { addBooking } from "../services/bookingService"
+import { getCurrentUser } from "../services/authService"
 
 
 function MovieDetails() {
 
   const { id } = useParams()
+
+  const user =
+  getCurrentUser()
 
   const movie =
     movies.find(
@@ -44,14 +48,28 @@ function MovieDetails() {
         {movie.description}
       </p>
 
-      <button
-        onClick={() => {
-          addBooking(movie.id)
-          alert("Seat booked")
-        }}
-      >
-        Book a Seat
-      </button>
+      {
+        user &&
+        (
+          <button
+           onClick={() => {
+              addBooking(movie.id)
+              alert("Seat booked")
+            }}
+          >
+            Book a Seat
+          </button>
+        )
+      }
+
+      {
+        !user &&
+        (
+          <p>
+            Please log in to book a seat.
+          </p>
+        )
+      }
 
     </div>
   )
