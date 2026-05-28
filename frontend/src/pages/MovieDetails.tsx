@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom"
 import { movies } from "../services/movieData"
 import { addBooking } from "../services/bookingService"
 import { getCurrentUser } from "../services/authService"
-
+import "./MovieDetails.css"
 
 function MovieDetails() {
 
