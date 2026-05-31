@@ -1,7 +1,7 @@
 import express from "express"
 import cors from "cors"
 import dotenv from "dotenv"
-import { movies } from "./data/movies"
+import { getAllMovies } from "./services/movieService"
 
 dotenv.config()
 
@@ -16,7 +16,9 @@ app.get("/health", (req, res) => {
   })
 })
 
-app.get("/api/movies", (req, res) => {
+app.get("/api/movies", async (req, res) => {
+  const movies =
+    await getAllMovies()
   res.json(movies)
 })
 
