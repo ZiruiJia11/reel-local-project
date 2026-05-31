@@ -6,6 +6,9 @@ This project is being rebuilt from an earlier academic prototype into a modern S
 
 ---
 
+Live Demo: https://reel-local-project.vercel.app/
+Backend API: https://reel-local-project.onrender.com
+
 ## Current Features
 
 ### Frontend
