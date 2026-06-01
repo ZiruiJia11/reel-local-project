@@ -1,5 +1,5 @@
 const API_URL =
-  "http://localhost:3001"
+  "https://reel-local-project.onrender.com"
 
 export async function getBookings() {
 
