@@ -1,68 +1,112 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+
 import { login } from "../services/authService"
 
 function Login() {
-  const navigate = useNavigate()
 
-  const [name, setName] =
-    useState("")
+  const navigate =
+    useNavigate()
 
   const [email, setEmail] =
     useState("")
 
-  function handleSubmit(
+  const [password, setPassword] =
+    useState("")
+
+  const [error, setError] =
+    useState("")
+
+  async function handleSubmit(
     event: React.FormEvent
   ) {
+
     event.preventDefault()
 
-    login({
-      name,
-      email,
-    })
+    try {
 
-    navigate("/profile")
+      await login(
+        email,
+        password,
+      )
+
+      navigate(
+        "/profile"
+      )
+
+    } catch {
+
+      setError(
+        "Invalid email or password"
+      )
+
+    }
+
   }
 
   return (
     <div className="form-page">
+
       <form
         className="auth-form"
         onSubmit={handleSubmit}
       >
-        <h1>Login</h1>
 
-        <label>
-          Name
-          <input
-            value={name}
-            onChange={
-              event =>
-                setName(event.target.value)
-            }
-            placeholder="Steven Jia"
-            required
-          />
-        </label>
+        <h1>
+          Login
+        </h1>
+
+        {
+          error &&
+          (
+            <p>
+              {error}
+            </p>
+          )
+        }
 
         <label>
           Email
+
           <input
             type="email"
             value={email}
             onChange={
               event =>
-                setEmail(event.target.value)
+                setEmail(
+                  event.target.value
+                )
             }
-            placeholder="steven@example.com"
             required
           />
+
         </label>
 
-        <button type="submit">
+        <label>
+          Password
+
+          <input
+            type="password"
+            value={password}
+            onChange={
+              event =>
+                setPassword(
+                  event.target.value
+                )
+            }
+            required
+          />
+
+        </label>
+
+        <button
+          type="submit"
+        >
           Login
         </button>
+
       </form>
+
     </div>
   )
 }
