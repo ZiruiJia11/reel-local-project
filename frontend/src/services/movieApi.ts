@@ -1,10 +1,9 @@
 import type { Movie } from "../types/Movie"
 
 const API_URL =
-  "https://reel-local-project.onrender.com"
+  "http://localhost:3001"
 
 export async function getMovies(): Promise<Movie[]> {
-
   const response =
     await fetch(
       `${API_URL}/api/movies`
@@ -17,5 +16,4 @@ export async function getMovies(): Promise<Movie[]> {
   }
 
   return response.json()
-
 }
