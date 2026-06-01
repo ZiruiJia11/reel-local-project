@@ -1,20 +1,79 @@
+import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { movies } from "../services/movieData"
+
+import { getMovies } from "../services/movieApi"
 import { addBooking } from "../services/bookingService"
 import { getCurrentUser } from "../services/authService"
+
+import type { Movie } from "../types/Movie"
+
 import "./MovieDetails.css"
 
 function MovieDetails() {
-
   const { id } = useParams()
 
   const user =
-  getCurrentUser()
+    getCurrentUser()
 
-  const movie =
-    movies.find(
-      m => m.id === id
+  const [movie, setMovie] =
+    useState<Movie | null>(null)
+
+  const [loading, setLoading] =
+    useState(true)
+
+  useEffect(() => {
+    async function loadMovie() {
+      try {
+        const movies =
+          await getMovies()
+
+        console.log("Route id:", id)
+        console.log("Movies from API:", movies)
+        console.log(
+         "Movie ids:",
+          movies.map(movie => movie.id)
+        )
+
+        const selectedMovie =
+          movies.find(
+            item =>
+              item.id === id
+          )
+
+        console.log("Selected movie:", selectedMovie)
+
+        setMovie(
+          selectedMovie || null
+        )
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadMovie()
+  }, [id])
+
+  async function handleBooking() {
+    if (!movie) {
+      return
+    }
+
+    console.log("Booking movie id:", movie.id)
+
+    await addBooking(movie.id)
+
+    alert("Seat booked")
+  }
+
+  if (loading) {
+    return (
+      <h1>
+        Loading movie...
+      </h1>
     )
+  }
 
   if (!movie) {
     return (
@@ -25,52 +84,45 @@ function MovieDetails() {
   }
 
   return (
-    <div>
-
+    <div className="movie-details">
       <img
         src={movie.image}
-        width="300"
+        alt={movie.title}
       />
 
-      <h1>
-        {movie.title}
-      </h1>
+      <div className="movie-details-content">
+        <h1>
+          {movie.title}
+        </h1>
 
-      <p>
-        {movie.genre}
-      </p>
+        <p className="movie-meta">
+          {movie.genre} · {movie.duration}
+        </p>
 
-      <p>
-        {movie.duration}
-      </p>
+        <p className="movie-description">
+          {movie.description}
+        </p>
 
-      <p>
-        {movie.description}
-      </p>
+        {
+          user &&
+          (
+            <button
+              onClick={handleBooking}
+            >
+              Book a Seat
+            </button>
+          )
+        }
 
-      {
-        user &&
-        (
-          <button
-           onClick={() => {
-              addBooking(movie.id)
-              alert("Seat booked")
-            }}
-          >
-            Book a Seat
-          </button>
-        )
-      }
-
-      {
-        !user &&
-        (
-          <p>
-            Please log in to book a seat.
-          </p>
-        )
-      }
-
+        {
+          !user &&
+          (
+            <p>
+              Please log in to book a seat.
+            </p>
+          )
+        }
+      </div>
     </div>
   )
 }

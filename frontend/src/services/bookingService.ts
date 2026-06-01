@@ -1,48 +1,49 @@
-export type Booking = {
-  movieId: string
-}
+const API_URL =
+  "http://localhost:3001"
 
-const STORAGE_KEY =
-  "reel-local-bookings"
+export async function getBookings() {
 
-export function getBookings(): Booking[] {
-
-  const data =
-    localStorage.getItem(
-      STORAGE_KEY
+  const response =
+    await fetch(
+      `${API_URL}/api/bookings`
     )
 
-  return data
-    ? JSON.parse(data)
-    : []
+  return response.json()
 
 }
 
-export function addBooking(
+export async function addBooking(
   movieId: string
 ) {
 
-  const bookings =
-    getBookings()
+  const response =
+    await fetch(
+      `${API_URL}/api/bookings`,
+      {
+        method: "POST",
 
-  bookings.push({
-    movieId,
-  })
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
 
-  localStorage.setItem(
-    STORAGE_KEY,
-
-    JSON.stringify(
-      bookings
+        body: JSON.stringify({
+          movieId,
+        }),
+      }
     )
-  )
+
+  return response.json()
 
 }
 
-export function clearBookings() {
+export async function clearBookings() {
 
-  localStorage.removeItem(
-    STORAGE_KEY
+  await fetch(
+    `${API_URL}/api/bookings`,
+    {
+      method: "DELETE",
+    }
   )
 
 }
