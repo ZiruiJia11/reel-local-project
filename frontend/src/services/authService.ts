@@ -1,3 +1,5 @@
+import { API_URL } from "../config/api"
+
 export type User = {
   id: string
   name: string
@@ -10,9 +12,6 @@ const USER_KEY =
 
 const TOKEN_KEY =
   "reel-local-token"
-
-const API_URL =
-  "http://localhost:3001"
 
 export async function register(
   name: string,

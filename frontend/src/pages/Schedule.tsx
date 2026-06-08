@@ -33,7 +33,14 @@ function Schedule() {
   }
 
   useEffect(() => {
-    loadBookings()
+    const timeoutId =
+      window.setTimeout(() => {
+        void loadBookings()
+      }, 0)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
   }, [])
 
   async function handleClearSchedule() {

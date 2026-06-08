@@ -12,5 +12,11 @@
     "skipLibCheck": true,
 
     "ignoreDeprecations": "6.0"
-  }
+  },
+  "exclude": [
+    "coverage",
+    "dist",
+    "node_modules",
+    "src/**/*.test.ts"
+  ]
 }

@@ -1,5 +1,4 @@
-const API_URL =
-  "https://reel-local-project.onrender.com"
+import { API_URL } from "../config/api"
 
 export async function getBookings() {
 
