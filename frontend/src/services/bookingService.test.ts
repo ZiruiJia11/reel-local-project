@@ -52,6 +52,7 @@ describe("bookingService", () => {
 
     const fetchMock =
       vi.fn().mockResolvedValue({
+        ok: true,
         json: async () => bookings,
       })
 
@@ -80,6 +81,7 @@ describe("bookingService", () => {
 
     const fetchMock =
       vi.fn().mockResolvedValue({
+        ok: true,
         json: async () => booking,
       })
 
@@ -111,7 +113,9 @@ describe("bookingService", () => {
     mockToken()
 
     const fetchMock =
-      vi.fn().mockResolvedValue({})
+      vi.fn().mockResolvedValue({
+        ok: true,
+      })
 
     vi.stubGlobal("fetch", fetchMock)
 
@@ -126,6 +130,26 @@ describe("bookingService", () => {
             "Bearer test-token",
         },
       },
+    )
+  })
+
+  it("throws the backend error message when booking fails", async () => {
+    mockToken()
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({
+          message: "Authentication required",
+        }),
+      }),
+    )
+
+    await expect(
+      addBooking("movie-1"),
+    ).rejects.toThrow(
+      "Authentication required",
     )
   })
 })

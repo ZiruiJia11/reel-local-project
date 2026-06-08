@@ -1,9 +1,16 @@
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import {
+  useNavigate,
+  useParams,
+} from "react-router-dom"
 
 import { getMovies } from "../services/movieApi"
 import { addBooking } from "../services/bookingService"
-import { getCurrentUser } from "../services/authService"
+import {
+  getCurrentUser,
+  logout,
+} from "../services/authService"
+import { isAuthError } from "../services/apiError"
 
 import type { Movie } from "../types/Movie"
 
@@ -11,6 +18,9 @@ import "./MovieDetails.css"
 
 function MovieDetails() {
   const { id } = useParams()
+
+  const navigate =
+    useNavigate()
 
   const user =
     getCurrentUser()
@@ -21,26 +31,20 @@ function MovieDetails() {
   const [loading, setLoading] =
     useState(true)
 
+  const [bookingMessage, setBookingMessage] =
+    useState("")
+
   useEffect(() => {
     async function loadMovie() {
       try {
         const movies =
           await getMovies()
 
-        console.log("Route id:", id)
-        console.log("Movies from API:", movies)
-        console.log(
-         "Movie ids:",
-          movies.map(movie => movie.id)
-        )
-
         const selectedMovie =
           movies.find(
             item =>
               item.id === id
           )
-
-        console.log("Selected movie:", selectedMovie)
 
         setMovie(
           selectedMovie || null
@@ -60,11 +64,25 @@ function MovieDetails() {
       return
     }
 
-    console.log("Booking movie id:", movie.id)
+    try {
+      await addBooking(movie.id)
 
-    await addBooking(movie.id)
+      setBookingMessage(
+        "Seat booked"
+      )
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to book seat"
 
-    alert("Seat booked")
+      setBookingMessage(message)
+
+      if (isAuthError(error)) {
+        logout()
+        navigate("/login")
+      }
+    }
   }
 
   if (loading) {
@@ -111,6 +129,15 @@ function MovieDetails() {
             >
               Book a Seat
             </button>
+          )
+        }
+
+        {
+          bookingMessage &&
+          (
+            <p>
+              {bookingMessage}
+            </p>
           )
         }
 

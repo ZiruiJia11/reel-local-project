@@ -1,4 +1,5 @@
 import { API_URL } from "../config/api"
+import { getErrorMessage } from "./apiError"
 
 export type User = {
   id: string
@@ -39,8 +40,14 @@ export async function register(
     )
 
   if (!response.ok) {
+    const message =
+      await getErrorMessage(
+        response,
+        "Registration failed",
+      )
+
     throw new Error(
-      "Registration failed"
+      message,
     )
   }
 
@@ -72,8 +79,14 @@ export async function login(
     )
 
   if (!response.ok) {
+    const message =
+      await getErrorMessage(
+        response,
+        "Invalid credentials",
+      )
+
     throw new Error(
-      "Invalid credentials"
+      message,
     )
   }
 
