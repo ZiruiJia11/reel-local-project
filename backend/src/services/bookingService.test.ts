@@ -2,9 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const mocks =
   vi.hoisted(() => ({
-    tenantFindUnique:
-      vi.fn(),
-    userUpsert:
+    userFindUnique:
       vi.fn(),
     bookingCreate:
       vi.fn(),
@@ -18,13 +16,9 @@ vi.mock(
   "../db/prisma",
   () => ({
     prisma: {
-      tenant: {
-        findUnique:
-          mocks.tenantFindUnique,
-      },
       user: {
-        upsert:
-          mocks.userUpsert,
+        findUnique:
+          mocks.userFindUnique,
       },
       booking: {
         create:
@@ -49,15 +43,10 @@ beforeEach(() => {
 })
 
 describe("bookingService", () => {
-  it("creates a booking for the demo tenant and user", async () => {
-    const tenant = {
-      id: "tenant-1",
-      slug: "reel-local-demo",
-    }
-
+  it("creates a booking for the current user", async () => {
     const user = {
       id: "user-1",
-      email: "demo@reellocal.com",
+      tenantId: "tenant-1",
     }
 
     const booking = {
@@ -65,33 +54,21 @@ describe("bookingService", () => {
       movieId: "movie-1",
     }
 
-    mocks.tenantFindUnique.mockResolvedValue(tenant)
-    mocks.userUpsert.mockResolvedValue(user)
+    mocks.userFindUnique.mockResolvedValue(user)
     mocks.bookingCreate.mockResolvedValue(booking)
 
     await expect(
-      createBooking("movie-1"),
+      createBooking(
+        "movie-1",
+        "user-1",
+      ),
     ).resolves.toEqual(booking)
 
     expect(
-      mocks.tenantFindUnique,
+      mocks.userFindUnique,
     ).toHaveBeenCalledWith({
       where: {
-        slug: "reel-local-demo",
-      },
-    })
-
-    expect(
-      mocks.userUpsert,
-    ).toHaveBeenCalledWith({
-      where: {
-        email: "demo@reellocal.com",
-      },
-      update: {},
-      create: {
-        name: "Demo User",
-        email: "demo@reellocal.com",
-        tenantId: "tenant-1",
+        id: "user-1",
       },
     })
 
@@ -109,13 +86,16 @@ describe("bookingService", () => {
     })
   })
 
-  it("throws when the demo tenant is missing", async () => {
-    mocks.tenantFindUnique.mockResolvedValue(null)
+  it("throws when the user is missing", async () => {
+    mocks.userFindUnique.mockResolvedValue(null)
 
     await expect(
-      createBooking("movie-1"),
+      createBooking(
+        "movie-1",
+        "user-1",
+      ),
     ).rejects.toThrow(
-      "Demo tenant not found",
+      "User not found",
     )
   })
 
@@ -132,12 +112,15 @@ describe("bookingService", () => {
     mocks.bookingFindMany.mockResolvedValue(bookings)
 
     await expect(
-      getBookings(),
+      getBookings("user-1"),
     ).resolves.toEqual(bookings)
 
     expect(
       mocks.bookingFindMany,
     ).toHaveBeenCalledWith({
+      where: {
+        userId: "user-1",
+      },
       include: {
         movie: true,
       },
@@ -155,11 +138,15 @@ describe("bookingService", () => {
     mocks.bookingDeleteMany.mockResolvedValue(result)
 
     await expect(
-      clearBookings(),
+      clearBookings("user-1"),
     ).resolves.toEqual(result)
 
     expect(
       mocks.bookingDeleteMany,
-    ).toHaveBeenCalledWith()
+    ).toHaveBeenCalledWith({
+      where: {
+        userId: "user-1",
+      },
+    })
   })
 })
