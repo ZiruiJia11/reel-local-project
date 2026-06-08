@@ -1,39 +1,24 @@
 import { prisma } from "../db/prisma"
 
-const DEMO_USER_EMAIL =
-  "demo@reellocal.com"
-
-const DEMO_TENANT_SLUG =
-  "reel-local-demo"
-
-export async function createBooking(movieId: string) {
-  const tenant =
-    await prisma.tenant.findUnique({
-      where: {
-        slug: DEMO_TENANT_SLUG,
-      },
-    })
-
-  if (!tenant) {
-    throw new Error("Demo tenant not found")
-  }
-
+export async function createBooking(
+  movieId: string,
+  userId: string,
+) {
   const user =
-    await prisma.user.upsert({
+    await prisma.user.findUnique({
       where: {
-        email: DEMO_USER_EMAIL,
-      },
-      update: {},
-      create: {
-        name: "Demo User",
-        email: DEMO_USER_EMAIL,
-        tenantId: tenant.id,
+        id: userId,
       },
     })
+
+  if (!user) {
+    throw new Error("User not found")
+  }
 
   return prisma.booking.create({
     data: {
-      tenantId: tenant.id,
+      tenantId:
+        user.tenantId,
       userId: user.id,
       movieId,
     },
@@ -43,8 +28,13 @@ export async function createBooking(movieId: string) {
   })
 }
 
-export async function getBookings() {
+export async function getBookings(
+  userId: string,
+) {
   return prisma.booking.findMany({
+    where: {
+      userId,
+    },
     include: {
       movie: true,
     },
@@ -54,6 +44,12 @@ export async function getBookings() {
   })
 }
 
-export async function clearBookings() {
-  return prisma.booking.deleteMany()
+export async function clearBookings(
+  userId: string,
+) {
+  return prisma.booking.deleteMany({
+    where: {
+      userId,
+    },
+  })
 }

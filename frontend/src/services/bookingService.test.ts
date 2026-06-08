@@ -11,8 +11,36 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
+function mockToken() {
+  const storage = new Map<string, string>()
+
+  storage.set(
+    "reel-local-token",
+    "test-token",
+  )
+
+  vi.stubGlobal(
+    "localStorage",
+    {
+      getItem: (key: string) =>
+        storage.get(key) || null,
+      removeItem: (key: string) =>
+        storage.delete(key),
+      setItem: (
+        key: string,
+        value: string,
+      ) => storage.set(
+        key,
+        value,
+      ),
+    },
+  )
+}
+
 describe("bookingService", () => {
   it("fetches bookings from the backend API", async () => {
+    mockToken()
+
     const bookings = [
       {
         id: "booking-1",
@@ -33,10 +61,18 @@ describe("bookingService", () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${API_URL}/api/bookings`,
+      {
+        headers: {
+          Authorization:
+            "Bearer test-token",
+        },
+      },
     )
   })
 
   it("creates a booking for a movie", async () => {
+    mockToken()
+
     const booking = {
       id: "booking-1",
       movieId: "movie-1",
@@ -60,6 +96,8 @@ describe("bookingService", () => {
 
         headers: {
           "Content-Type": "application/json",
+          Authorization:
+            "Bearer test-token",
         },
 
         body: JSON.stringify({
@@ -70,6 +108,8 @@ describe("bookingService", () => {
   })
 
   it("clears all bookings", async () => {
+    mockToken()
+
     const fetchMock =
       vi.fn().mockResolvedValue({})
 
@@ -81,6 +121,10 @@ describe("bookingService", () => {
       `${API_URL}/api/bookings`,
       {
         method: "DELETE",
+        headers: {
+          Authorization:
+            "Bearer test-token",
+        },
       },
     )
   })

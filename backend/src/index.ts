@@ -13,6 +13,9 @@ import {
   registerUser,
   loginUser,
 } from "./services/authService"
+import {
+  authenticateUser,
+} from "./middleware/authMiddleware"
 
 dotenv.config()
 
@@ -94,10 +97,18 @@ app.post("/api/auth/login", async (req, res) => {
   }
 })
 
-app.get("/api/bookings", async (req, res) => {
+app.get("/api/bookings", authenticateUser, async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication required",
+      })
+    }
+
     const bookings =
-      await getBookings()
+      await getBookings(
+        req.user.userId,
+      )
 
     res.json(bookings)
   } catch (error) {
@@ -107,13 +118,22 @@ app.get("/api/bookings", async (req, res) => {
   }
 })
 
-app.post("/api/bookings", async (req, res) => {
+app.post("/api/bookings", authenticateUser, async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication required",
+      })
+    }
+
     const { movieId } =
       req.body
 
     const booking =
-      await createBooking(movieId)
+      await createBooking(
+        movieId,
+        req.user.userId,
+      )
 
     res.status(201).json(booking)
   } catch (error) {
@@ -123,9 +143,17 @@ app.post("/api/bookings", async (req, res) => {
   }
 })
 
-app.delete("/api/bookings", async (req, res) => {
+app.delete("/api/bookings", authenticateUser, async (req, res) => {
   try {
-    await clearBookings()
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication required",
+      })
+    }
+
+    await clearBookings(
+      req.user.userId,
+    )
 
     res.json({
       message: "Bookings cleared",
