@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   useNavigate,
   useParams,
@@ -16,6 +16,16 @@ import type { Movie } from "../types/Movie"
 
 import "./MovieDetails.css"
 
+function formatShowtime(value: string) {
+  return new Intl.DateTimeFormat(
+    "en-NZ",
+    {
+      dateStyle: "medium",
+      timeStyle: "short",
+    },
+  ).format(new Date(value))
+}
+
 function MovieDetails() {
   const { id } = useParams()
 
@@ -31,8 +41,24 @@ function MovieDetails() {
   const [loading, setLoading] =
     useState(true)
 
+  const [selectedShowtimeId, setSelectedShowtimeId] =
+    useState("")
+
+  const [ticketCount, setTicketCount] =
+    useState(1)
+
   const [bookingMessage, setBookingMessage] =
     useState("")
+
+  const selectedShowtime =
+    useMemo(
+      () =>
+        movie?.showtimes.find(
+          showtime =>
+            showtime.id === selectedShowtimeId,
+        ),
+      [movie, selectedShowtimeId],
+    )
 
   useEffect(() => {
     async function loadMovie() {
@@ -49,6 +75,11 @@ function MovieDetails() {
         setMovie(
           selectedMovie || null
         )
+
+        setSelectedShowtimeId(
+          selectedMovie?.showtimes[0]?.id ||
+            "",
+        )
       } catch (error) {
         console.error(error)
       } finally {
@@ -60,15 +91,25 @@ function MovieDetails() {
   }, [id])
 
   async function handleBooking() {
-    if (!movie) {
+    if (
+      !movie ||
+      !selectedShowtime
+    ) {
+      setBookingMessage(
+        "Please choose a time"
+      )
       return
     }
 
     try {
-      await addBooking(movie.id)
+      await addBooking(
+        movie.id,
+        selectedShowtime.id,
+        ticketCount,
+      )
 
       setBookingMessage(
-        "Seat booked"
+        `${ticketCount} ticket${ticketCount === 1 ? "" : "s"} booked`
       )
     } catch (error) {
       const message =
@@ -121,34 +162,101 @@ function MovieDetails() {
           {movie.description}
         </p>
 
-        {
-          user &&
-          (
-            <button
-              onClick={handleBooking}
-            >
-              Book a Seat
-            </button>
-          )
-        }
+        <div className="booking-panel">
+          <h2>
+            Select a screening
+          </h2>
 
-        {
-          bookingMessage &&
-          (
-            <p>
-              {bookingMessage}
-            </p>
-          )
-        }
+          <div className="showtime-list">
+            {
+              movie.showtimes.map(showtime => (
+                <label
+                  className="showtime-option"
+                  key={showtime.id}
+                >
+                  <input
+                    type="radio"
+                    name="showtime"
+                    checked={
+                      selectedShowtimeId ===
+                        showtime.id
+                    }
+                    onChange={() => {
+                      setSelectedShowtimeId(
+                        showtime.id,
+                      )
+                      setBookingMessage("")
+                    }}
+                  />
 
-        {
-          !user &&
-          (
-            <p>
-              Please log in to book a seat.
-            </p>
-          )
-        }
+                  <span>
+                    {formatShowtime(showtime.startsAt)}
+                  </span>
+
+                  <strong>
+                    {showtime.remainingTickets} left
+                  </strong>
+                </label>
+              ))
+            }
+          </div>
+
+          <label className="ticket-control">
+            Tickets
+            <input
+              type="number"
+              min="1"
+              max={
+                selectedShowtime
+                  ? Math.min(
+                      selectedShowtime.remainingTickets,
+                      10,
+                    )
+                  : 1
+              }
+              value={ticketCount}
+              onChange={event =>
+                setTicketCount(
+                  Number(event.target.value),
+                )
+              }
+            />
+          </label>
+
+          {
+            user &&
+            (
+              <button
+                onClick={handleBooking}
+                disabled={
+                  !selectedShowtime ||
+                  selectedShowtime.remainingTickets <=
+                    0
+                }
+              >
+                Book Tickets
+              </button>
+            )
+          }
+
+          {
+            bookingMessage &&
+            (
+              <p className="booking-message">
+                {bookingMessage}
+              </p>
+            )
+          }
+
+          {
+            !user &&
+            (
+              <p>
+                Please log in to book tickets.
+              </p>
+            )
+          }
+        </div>
       </div>
     </div>
   )

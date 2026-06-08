@@ -40,7 +40,9 @@ export async function getBookings() {
 }
 
 export async function addBooking(
-  movieId: string
+  movieId: string,
+  showtimeId: string,
+  ticketCount: number,
 ) {
 
   const response =
@@ -57,6 +59,8 @@ export async function addBooking(
 
         body: JSON.stringify({
           movieId,
+          showtimeId,
+          ticketCount,
         }),
       }
     )

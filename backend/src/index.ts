@@ -126,19 +126,28 @@ app.post("/api/bookings", authenticateUser, async (req, res) => {
       })
     }
 
-    const { movieId } =
+    const {
+      movieId,
+      showtimeId,
+      ticketCount,
+    } =
       req.body
 
     const booking =
       await createBooking(
         movieId,
         req.user.userId,
+        showtimeId,
+        Number(ticketCount),
       )
 
     res.status(201).json(booking)
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to create booking",
+    res.status(400).json({
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to create booking",
     })
   }
 })

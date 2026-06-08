@@ -1,3 +1,10 @@
+export type Showtime = {
+  id: string
+  startsAt: string
+  capacity: number
+  remainingTickets: number
+}
+
 export type Movie = {
   id: string
   title: string
@@ -5,4 +12,5 @@ export type Movie = {
   genre: string
   duration: string
   description: string
+  showtimes: Showtime[]
 }

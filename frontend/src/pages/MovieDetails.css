@@ -48,3 +48,55 @@
 .movie-details-content button:hover {
   background: #d9a441;
 }
+
+.booking-panel {
+  border-top: 1px solid #eee;
+  padding-top: 24px;
+}
+
+.booking-panel h2 {
+  font-size: 20px;
+  margin: 0 0 16px;
+}
+
+.showtime-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.showtime-option {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+.showtime-option strong {
+  color: #1f1f1f;
+  font-size: 14px;
+}
+
+.ticket-control {
+  display: grid;
+  gap: 8px;
+  max-width: 160px;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.ticket-control input {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 16px;
+}
+
+.booking-message {
+  margin-top: 14px;
+  font-weight: 700;
+}

@@ -77,6 +77,8 @@ describe("bookingService", () => {
     const booking = {
       id: "booking-1",
       movieId: "movie-1",
+      showtimeId: "showtime-1",
+      ticketCount: 2,
     }
 
     const fetchMock =
@@ -88,7 +90,11 @@ describe("bookingService", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     await expect(
-      addBooking("movie-1"),
+      addBooking(
+        "movie-1",
+        "showtime-1",
+        2,
+      ),
     ).resolves.toEqual(booking)
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -104,6 +110,8 @@ describe("bookingService", () => {
 
         body: JSON.stringify({
           movieId: "movie-1",
+          showtimeId: "showtime-1",
+          ticketCount: 2,
         }),
       },
     )
@@ -147,7 +155,11 @@ describe("bookingService", () => {
     )
 
     await expect(
-      addBooking("movie-1"),
+      addBooking(
+        "movie-1",
+        "showtime-1",
+        2,
+      ),
     ).rejects.toThrow(
       "Authentication required",
     )

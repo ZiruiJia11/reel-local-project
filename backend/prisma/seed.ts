@@ -75,6 +75,76 @@ async function main() {
     ],
     skipDuplicates: true,
   })
+
+  const movies =
+    await prisma.movie.findMany({
+      where: {
+        tenantId: tenant.id,
+      },
+    })
+
+  const showtimeOffsets = [
+    {
+      days: 1,
+      hour: 18,
+      minute: 30,
+      capacity: 40,
+    },
+    {
+      days: 2,
+      hour: 20,
+      minute: 0,
+      capacity: 35,
+    },
+    {
+      days: 4,
+      hour: 16,
+      minute: 15,
+      capacity: 30,
+    },
+  ]
+
+  for (const movie of movies) {
+    for (const offset of showtimeOffsets) {
+      const startsAt =
+        new Date()
+
+      startsAt.setDate(
+        startsAt.getDate() +
+          offset.days,
+      )
+
+      startsAt.setHours(
+        offset.hour,
+        offset.minute,
+        0,
+        0,
+      )
+
+      await prisma.showtime.upsert({
+        where: {
+          movieId_startsAt: {
+            movieId:
+              movie.id,
+            startsAt,
+          },
+        },
+        update: {
+          capacity:
+            offset.capacity,
+        },
+        create: {
+          movieId:
+            movie.id,
+          tenantId:
+            tenant.id,
+          startsAt,
+          capacity:
+            offset.capacity,
+        },
+      })
+    }
+  }
 }
 
 main()

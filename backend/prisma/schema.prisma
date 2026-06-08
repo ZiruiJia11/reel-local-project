@@ -16,6 +16,7 @@ model Tenant {
 
   users     User[]
   movies    Movie[]
+  showtimes Showtime[]
   bookings  Booking[]
 }
 
@@ -47,12 +48,32 @@ model Movie {
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
 
+  showtimes   Showtime[]
   bookings    Booking[]
+}
+
+model Showtime {
+  id        String   @id @default(uuid())
+  startsAt  DateTime
+  capacity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  movieId   String
+  movie     Movie    @relation(fields: [movieId], references: [id])
+
+  bookings  Booking[]
+
+  @@unique([movieId, startsAt])
 }
 
 model Booking {
   id        String        @id @default(uuid())
   status    BookingStatus @default(CONFIRMED)
+  ticketCount Int         @default(1)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
@@ -64,6 +85,9 @@ model Booking {
 
   movieId   String
   movie     Movie         @relation(fields: [movieId], references: [id])
+
+  showtimeId String?
+  showtime   Showtime?    @relation(fields: [showtimeId], references: [id])
 }
 
 enum UserRole {
