@@ -1,9 +1,16 @@
-import { useEffect, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react"
+import { useNavigate } from "react-router-dom"
 
 import {
   getBookings,
   clearBookings,
 } from "../services/bookingService"
+import { logout } from "../services/authService"
+import { isAuthError } from "../services/apiError"
 
 type Booking = {
   id: string
@@ -13,24 +20,41 @@ type Booking = {
 }
 
 function Schedule() {
+  const navigate =
+    useNavigate()
+
   const [bookings, setBookings] =
     useState<Booking[]>([])
 
   const [loading, setLoading] =
     useState(true)
 
-  async function loadBookings() {
+  const [errorMessage, setErrorMessage] =
+    useState("")
+
+  const loadBookings =
+    useCallback(async () => {
     try {
       const data =
         await getBookings()
 
       setBookings(data)
     } catch (error) {
-      console.error(error)
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch bookings"
+
+      setErrorMessage(message)
+
+      if (isAuthError(error)) {
+        logout()
+        navigate("/login")
+      }
     } finally {
       setLoading(false)
     }
-  }
+    }, [navigate])
 
   useEffect(() => {
     const timeoutId =
@@ -41,12 +65,27 @@ function Schedule() {
     return () => {
       window.clearTimeout(timeoutId)
     }
-  }, [])
+  }, [loadBookings])
 
   async function handleClearSchedule() {
-    await clearBookings()
+    try {
+      await clearBookings()
 
-    setBookings([])
+      setBookings([])
+      setErrorMessage("")
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to clear bookings"
+
+      setErrorMessage(message)
+
+      if (isAuthError(error)) {
+        logout()
+        navigate("/login")
+      }
+    }
   }
 
   if (loading) {
@@ -62,6 +101,15 @@ function Schedule() {
       <h1>
         My Schedule
       </h1>
+
+      {
+        errorMessage &&
+        (
+          <p>
+            {errorMessage}
+          </p>
+        )
+      }
 
       <button
         onClick={handleClearSchedule}

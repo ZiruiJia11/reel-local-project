@@ -34,10 +34,12 @@ function Login() {
         "/profile"
       )
 
-    } catch {
+    } catch (error) {
 
       setError(
-        "Invalid email or password"
+        error instanceof Error
+          ? error.message
+          : "Invalid email or password"
       )
 
     }

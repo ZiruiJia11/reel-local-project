@@ -90,6 +90,9 @@ describe("authService", () => {
       "fetch",
       vi.fn().mockResolvedValue({
         ok: false,
+        json: async () => ({
+          message: "User already exists",
+        }),
       }),
     )
 
@@ -99,7 +102,7 @@ describe("authService", () => {
         "demo@example.com",
         "password123",
       ),
-    ).rejects.toThrow("Registration failed")
+    ).rejects.toThrow("User already exists")
   })
 
   it("logs in a user and saves auth data", async () => {
@@ -146,6 +149,9 @@ describe("authService", () => {
       "fetch",
       vi.fn().mockResolvedValue({
         ok: false,
+        json: async () => ({
+          message: "Invalid credentials",
+        }),
       }),
     )
 

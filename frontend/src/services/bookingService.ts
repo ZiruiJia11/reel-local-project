@@ -1,4 +1,5 @@
 import { API_URL } from "../config/api"
+import { getErrorMessage } from "./apiError"
 import { getToken } from "./authService"
 
 function getAuthHeaders(): Record<string, string> {
@@ -23,6 +24,16 @@ export async function getBookings() {
           getAuthHeaders(),
       },
     )
+
+  if (!response.ok) {
+    const message =
+      await getErrorMessage(
+        response,
+        "Failed to fetch bookings",
+      )
+
+    throw new Error(message)
+  }
 
   return response.json()
 
@@ -50,19 +61,40 @@ export async function addBooking(
       }
     )
 
+  if (!response.ok) {
+    const message =
+      await getErrorMessage(
+        response,
+        "Failed to create booking",
+      )
+
+    throw new Error(message)
+  }
+
   return response.json()
 
 }
 
 export async function clearBookings() {
 
-  await fetch(
-    `${API_URL}/api/bookings`,
-    {
-      method: "DELETE",
-      headers:
-        getAuthHeaders(),
-    }
-  )
+  const response =
+    await fetch(
+      `${API_URL}/api/bookings`,
+      {
+        method: "DELETE",
+        headers:
+          getAuthHeaders(),
+      }
+    )
+
+  if (!response.ok) {
+    const message =
+      await getErrorMessage(
+        response,
+        "Failed to clear bookings",
+      )
+
+    throw new Error(message)
+  }
 
 }
