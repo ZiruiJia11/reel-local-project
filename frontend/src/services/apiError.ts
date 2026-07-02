@@ -22,6 +22,9 @@ export async function getErrorMessage(
 export function isAuthError(error: unknown) {
   return (
     error instanceof Error &&
-    error.message === "Authentication required"
+    (
+      error.message === "Authentication required" ||
+      error.message === "Invalid token"
+    )
   )
 }
