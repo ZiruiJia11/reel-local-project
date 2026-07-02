@@ -1,17 +1,13 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import {
-  useNavigate,
   useParams,
 } from "react-router-dom"
 
+import BookingModal from "../components/BookingModal"
 import { getMovies } from "../services/movieApi"
-import { addBooking } from "../services/bookingService"
 import {
   getCurrentUser,
-  logout,
 } from "../services/authService"
-import { isAuthError } from "../services/apiError"
-import { showToast } from "../services/toastService"
 
 import type { Movie } from "../types/Movie"
 
@@ -30,9 +26,6 @@ function formatShowtime(value: string) {
 function MovieDetails() {
   const { id } = useParams()
 
-  const navigate =
-    useNavigate()
-
   const user =
     getCurrentUser()
 
@@ -48,18 +41,8 @@ function MovieDetails() {
   const [selectedShowtimeId, setSelectedShowtimeId] =
     useState("")
 
-  const [ticketCount, setTicketCount] =
-    useState(1)
-
-  const selectedShowtime =
-    useMemo(
-      () =>
-        movie?.showtimes.find(
-          showtime =>
-            showtime.id === selectedShowtimeId,
-        ),
-      [movie, selectedShowtimeId],
-    )
+  const [bookingOpen, setBookingOpen] =
+    useState(false)
 
   useEffect(() => {
     async function loadMovie() {
@@ -91,42 +74,31 @@ function MovieDetails() {
     loadMovie()
   }, [id])
 
-  async function handleBooking() {
-    if (
-      !movie ||
-      !selectedShowtime
-    ) {
-      showToast(
-        "Please choose a time",
-        "info",
-      )
-      return
-    }
-
-    try {
-      await addBooking(
-        movie.id,
-        selectedShowtime.id,
-        ticketCount,
-      )
-
-      showToast(
-        `${ticketCount} ticket${ticketCount === 1 ? "" : "s"} booked`,
-        "success",
-      )
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to book seat"
-
-      showToast(message, "error")
-
-      if (isAuthError(error)) {
-        logout()
-        navigate("/login")
-      }
-    }
+  function handleBooked(
+    showtimeId: string,
+    bookedTickets: number,
+  ) {
+    setMovie(currentMovie =>
+      currentMovie
+        ? {
+            ...currentMovie,
+            showtimes:
+              currentMovie.showtimes.map(showtime =>
+                showtime.id === showtimeId
+                  ? {
+                      ...showtime,
+                      remainingTickets:
+                        Math.max(
+                          showtime.remainingTickets -
+                            bookedTickets,
+                          0,
+                        ),
+                    }
+                  : showtime,
+              ),
+          }
+        : currentMovie,
+    )
   }
 
   if (loading) {
@@ -203,38 +175,16 @@ function MovieDetails() {
             }
           </div>
 
-          <label className="ticket-control">
-            Tickets
-            <input
-              type="number"
-              min="1"
-              max={
-                selectedShowtime
-                  ? Math.min(
-                      selectedShowtime.remainingTickets,
-                      10,
-                    )
-                  : 1
-              }
-              value={ticketCount}
-              onChange={event =>
-                setTicketCount(
-                  Number(event.target.value),
-                )
-              }
-            />
-          </label>
-
           {
             user &&
             !isAdmin &&
             (
               <button
-                onClick={handleBooking}
+                onClick={() =>
+                  setBookingOpen(true)
+                }
                 disabled={
-                  !selectedShowtime ||
-                  selectedShowtime.remainingTickets <=
-                    0
+                  movie.showtimes.length === 0
                 }
               >
                 Book Tickets
@@ -261,6 +211,16 @@ function MovieDetails() {
           }
         </div>
       </div>
+
+      <BookingModal
+        open={bookingOpen}
+        movie={movie}
+        initialShowtimeId={selectedShowtimeId}
+        onClose={() =>
+          setBookingOpen(false)
+        }
+        onBooked={handleBooked}
+      />
     </div>
   )
 }

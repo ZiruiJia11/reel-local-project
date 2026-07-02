@@ -5,12 +5,7 @@ import {
 } from "react"
 import { useNavigate } from "react-router-dom"
 
-import { addBooking } from "../services/bookingService"
-import { isAuthError } from "../services/apiError"
-import {
-  getCurrentUser,
-  logout,
-} from "../services/authService"
+import BookingModal from "../components/BookingModal"
 import { getMovies } from "../services/movieApi"
 import { showToast } from "../services/toastService"
 import type { Movie } from "../types/Movie"
@@ -68,13 +63,12 @@ function Home() {
   const navigate =
     useNavigate()
 
-  const user =
-    getCurrentUser()
-
   const [movies, setMovies] =
     useState<Movie[]>([])
   const [selectedDate, setSelectedDate] =
     useState("")
+  const [bookingMovie, setBookingMovie] =
+    useState<Movie | null>(null)
   const [bookingShowtimeId, setBookingShowtimeId] =
     useState("")
 
@@ -160,60 +154,38 @@ function Home() {
         group.key === selectedDate,
     )?.screenings || []
 
-  async function handleQuickBook(
+  function handleOpenBooking(
     screening: Screening,
   ) {
-    if (!user) {
-      showToast(
-        "Please log in to book tickets",
-        "info",
-      )
-      navigate("/login")
-      return
-    }
+    setBookingMovie(screening.movie)
+    setBookingShowtimeId(
+      screening.showtimeId,
+    )
+  }
 
-    if (user.role === "ADMIN") {
-      showToast(
-        "Admins manage screenings from the Admin page",
-        "info",
-      )
-      navigate("/admin")
-      return
-    }
-
-    try {
-      setBookingShowtimeId(
-        screening.showtimeId,
-      )
-
-      await addBooking(
-        screening.movie.id,
-        screening.showtimeId,
-        1,
-      )
-
-      showToast(
-        `Booked 1 ticket for ${screening.movie.title}`,
-        "success",
-      )
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to book ticket"
-
-      showToast(
-        message,
-        "error",
-      )
-
-      if (isAuthError(error)) {
-        logout()
-        navigate("/login")
-      }
-    } finally {
-      setBookingShowtimeId("")
-    }
+  function handleBooked(
+    showtimeId: string,
+    bookedTickets: number,
+  ) {
+    setMovies(currentMovies =>
+      currentMovies.map(movie => ({
+        ...movie,
+        showtimes:
+          movie.showtimes.map(showtime =>
+            showtime.id === showtimeId
+              ? {
+                  ...showtime,
+                  remainingTickets:
+                    Math.max(
+                      showtime.remainingTickets -
+                        bookedTickets,
+                      0,
+                    ),
+                }
+              : showtime,
+          ),
+      })),
+    )
   }
 
   return (
@@ -291,28 +263,30 @@ function Home() {
 
                 <button
                   onClick={() => {
-                    void handleQuickBook(
-                      screening,
-                    )
+                    handleOpenBooking(screening)
                   }}
                   disabled={
-                    bookingShowtimeId ===
-                      screening.showtimeId ||
                     screening.remainingTickets <= 0
                   }
                 >
-                  {
-                    bookingShowtimeId ===
-                      screening.showtimeId
-                      ? "Booking..."
-                      : "Book 1 ticket"
-                  }
+                  Book
                 </button>
               </article>
             ))
           }
         </div>
       </section>
+
+      <BookingModal
+        open={Boolean(bookingMovie)}
+        movie={bookingMovie}
+        initialShowtimeId={bookingShowtimeId}
+        onClose={() => {
+          setBookingMovie(null)
+          setBookingShowtimeId("")
+        }}
+        onBooked={handleBooked}
+      />
     </div>
   )
 }
