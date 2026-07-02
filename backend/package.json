@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
+    "seed:showtimes": "ts-node prisma/seed-showtimes.ts",
     "test": "vitest run",
     "coverage": "vitest run --coverage"
   },
