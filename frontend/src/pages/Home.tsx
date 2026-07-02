@@ -19,6 +19,11 @@ type Screening = {
   remainingTickets: number
 }
 
+type MovieDayGroup = {
+  movie: Movie
+  screenings: Screening[]
+}
+
 function formatDate(value: string) {
   const date =
     new Date(value)
@@ -102,20 +107,27 @@ function Home() {
     void loadMovies()
   }, [])
 
-  const screeningsByDate =
+  const movieGroupsByDate =
     useMemo(() => {
-      const groups =
-        new Map<string, Screening[]>()
+      const dateGroups =
+        new Map<string, Map<string, MovieDayGroup>>()
 
       movies.forEach(movie => {
         movie.showtimes.forEach(showtime => {
           const key =
             dateKey(showtime.startsAt)
 
-          const current =
-            groups.get(key) || []
+          const movieGroups =
+            dateGroups.get(key) ||
+            new Map<string, MovieDayGroup>()
 
-          current.push({
+          const movieGroup =
+            movieGroups.get(movie.id) || {
+              movie,
+              screenings: [],
+            }
+
+          movieGroup.screenings.push({
             movie,
             showtimeId: showtime.id,
             startsAt: showtime.startsAt,
@@ -123,36 +135,61 @@ function Home() {
               showtime.remainingTickets,
           })
 
-          groups.set(key, current)
+          movieGroups.set(
+            movie.id,
+            movieGroup,
+          )
+
+          dateGroups.set(
+            key,
+            movieGroups,
+          )
         })
       })
 
       return Array.from(
-        groups.entries(),
+        dateGroups.entries(),
       )
         .sort(([a], [b]) =>
           a.localeCompare(b),
         )
-        .map(([key, screenings]) => ({
-          key,
-          label:
-            formatDate(
-              screenings[0].startsAt,
-            ),
-          screenings:
-            screenings.sort(
-              (a, b) =>
-                new Date(a.startsAt).getTime() -
-                new Date(b.startsAt).getTime(),
-            ),
-        }))
+        .map(([key, movieGroups]) => {
+          const groupedMovies =
+            Array.from(
+              movieGroups.values(),
+            )
+              .map(group => ({
+                ...group,
+                screenings:
+                  group.screenings.sort(
+                    (a, b) =>
+                      new Date(a.startsAt).getTime() -
+                      new Date(b.startsAt).getTime(),
+                  ),
+              }))
+              .sort(
+                (a, b) =>
+                  new Date(a.screenings[0].startsAt).getTime() -
+                  new Date(b.screenings[0].startsAt).getTime(),
+              )
+
+          return {
+            key,
+            label:
+              formatDate(
+                groupedMovies[0].screenings[0].startsAt,
+              ),
+            movieGroups:
+              groupedMovies,
+          }
+        })
     }, [movies])
 
-  const selectedScreenings =
-    screeningsByDate.find(
+  const selectedMovieGroups =
+    movieGroupsByDate.find(
       group =>
         group.key === selectedDate,
-    )?.screenings || []
+    )?.movieGroups || []
 
   function handleOpenBooking(
     screening: Screening,
@@ -197,7 +234,7 @@ function Home() {
           </h1>
 
           <p>
-            Pick a day, choose a screening, and book a seat in one step.
+            Pick a day, choose a film, and select the time that works for you.
           </p>
         </div>
 
@@ -211,7 +248,7 @@ function Home() {
       <section className="daily-screenings">
         <div className="date-tabs">
           {
-            screeningsByDate.map(group => (
+            movieGroupsByDate.map(group => (
               <button
                 className={
                   group.key === selectedDate
@@ -231,46 +268,50 @@ function Home() {
 
         <div className="screening-list">
           {
-            selectedScreenings.map(screening => (
+            selectedMovieGroups.map(group => (
               <article
                 className="screening-row"
-                key={screening.showtimeId}
+                key={group.movie.id}
               >
                 <img
-                  src={screening.movie.image}
-                  alt={screening.movie.title}
+                  src={group.movie.image}
+                  alt={group.movie.title}
                 />
 
                 <div>
                   <h2>
-                    {screening.movie.title}
+                    {group.movie.title}
                   </h2>
 
                   <p>
-                    {screening.movie.genre} · {screening.movie.duration}
+                    {group.movie.genre} · {group.movie.duration}
                   </p>
                 </div>
 
-                <div className="screening-time">
-                  <strong>
-                    {formatTime(screening.startsAt)}
-                  </strong>
+                <div className="screening-time-list">
+                  {
+                    group.screenings.map(screening => (
+                      <button
+                        className="screening-time-button"
+                        key={screening.showtimeId}
+                        onClick={() => {
+                          handleOpenBooking(screening)
+                        }}
+                        disabled={
+                          screening.remainingTickets <= 0
+                        }
+                      >
+                        <strong>
+                          {formatTime(screening.startsAt)}
+                        </strong>
 
-                  <span>
-                    {screening.remainingTickets} left
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => {
-                    handleOpenBooking(screening)
-                  }}
-                  disabled={
-                    screening.remainingTickets <= 0
+                        <span>
+                          {screening.remainingTickets} left
+                        </span>
+                      </button>
+                    ))
                   }
-                >
-                  Book
-                </button>
+                </div>
               </article>
             ))
           }

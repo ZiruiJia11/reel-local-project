@@ -80,7 +80,7 @@
   border-radius: 8px;
   display: grid;
   gap: 16px;
-  grid-template-columns: 64px 1fr auto auto;
+  grid-template-columns: 64px minmax(180px, 1fr) minmax(260px, auto);
   padding: 12px;
 }
 
@@ -97,15 +97,32 @@
 }
 
 .screening-row p,
-.screening-time span {
+.screening-time-button span {
   color: #666;
   margin: 0;
 }
 
-.screening-time {
+.screening-time-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.screening-time-button {
+  background: #1f1f1f;
+  border: none;
+  color: white;
   display: grid;
-  gap: 4px;
-  min-width: 92px;
+  gap: 3px;
+  min-width: 94px;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.screening-time-button span {
+  color: rgba(255,255,255,.72);
+  font-size: 12px;
 }
 
 .screening-row button:disabled {
@@ -128,8 +145,8 @@
     width: 56px;
   }
 
-  .screening-time,
-  .screening-row button {
+  .screening-time-list {
     grid-column: 1 / -1;
+    justify-content: flex-start;
   }
 }
