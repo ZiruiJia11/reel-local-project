@@ -102,3 +102,29 @@ export async function clearBookings() {
   }
 
 }
+
+export async function cancelBooking(
+  bookingId: string,
+) {
+
+  const response =
+    await fetch(
+      `${API_URL}/api/bookings/${bookingId}`,
+      {
+        method: "DELETE",
+        headers:
+          getAuthHeaders(),
+      }
+    )
+
+  if (!response.ok) {
+    const message =
+      await getErrorMessage(
+        response,
+        "Failed to cancel booking",
+      )
+
+    throw new Error(message)
+  }
+
+}

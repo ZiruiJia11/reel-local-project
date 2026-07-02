@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { API_URL } from "../config/api"
 import {
   addBooking,
+  cancelBooking,
   clearBookings,
   getBookings,
 } from "./bookingService"
@@ -131,6 +132,30 @@ describe("bookingService", () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${API_URL}/api/bookings`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization:
+            "Bearer test-token",
+        },
+      },
+    )
+  })
+
+  it("cancels one booking", async () => {
+    mockToken()
+
+    const fetchMock =
+      vi.fn().mockResolvedValue({
+        ok: true,
+      })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    await cancelBooking("booking-1")
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${API_URL}/api/bookings/booking-1`,
       {
         method: "DELETE",
         headers: {

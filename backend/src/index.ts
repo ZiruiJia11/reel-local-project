@@ -4,6 +4,7 @@ import dotenv from "dotenv"
 import { getAllMovies } from "./services/movieService"
 
 import {
+  cancelBooking,
   createBooking,
   getBookings,
   clearBookings,
@@ -170,6 +171,41 @@ app.delete("/api/bookings", authenticateUser, async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Failed to clear bookings",
+    })
+  }
+})
+
+app.delete("/api/bookings/:bookingId", authenticateUser, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication required",
+      })
+    }
+
+    const bookingId =
+      req.params.bookingId
+
+    if (typeof bookingId !== "string") {
+      return res.status(400).json({
+        message: "Booking id is required",
+      })
+    }
+
+    await cancelBooking(
+      bookingId,
+      req.user.userId,
+    )
+
+    res.json({
+      message: "Booking cancelled",
+    })
+  } catch (error) {
+    res.status(404).json({
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to cancel booking",
     })
   }
 })

@@ -6,6 +6,7 @@ import {
 import { useNavigate } from "react-router-dom"
 
 import {
+  cancelBooking,
   getBookings,
   clearBookings,
 } from "../services/bookingService"
@@ -53,6 +54,9 @@ function Schedule() {
     useState(true)
 
   const [errorMessage, setErrorMessage] =
+    useState("")
+
+  const [cancellingBookingId, setCancellingBookingId] =
     useState("")
 
   const totalTickets =
@@ -115,6 +119,38 @@ function Schedule() {
         logout()
         navigate("/login")
       }
+    }
+  }
+
+  async function handleCancelBooking(
+    bookingId: string,
+  ) {
+    try {
+      setCancellingBookingId(bookingId)
+
+      await cancelBooking(bookingId)
+
+      setBookings(currentBookings =>
+        currentBookings.filter(
+          booking =>
+            booking.id !== bookingId,
+        ),
+      )
+      setErrorMessage("")
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to cancel booking"
+
+      setErrorMessage(message)
+
+      if (isAuthError(error)) {
+        logout()
+        navigate("/login")
+      }
+    } finally {
+      setCancellingBookingId("")
     }
   }
 
@@ -202,14 +238,34 @@ function Schedule() {
                     </p>
                   </div>
 
-                  <div className="booking-meta-row">
-                    <span>
-                      {booking.ticketCount} ticket{booking.ticketCount === 1 ? "" : "s"}
-                    </span>
+                  <div className="booking-card-footer">
+                    <div className="booking-meta-row">
+                      <span>
+                        {booking.ticketCount} ticket{booking.ticketCount === 1 ? "" : "s"}
+                      </span>
 
-                    <span>
-                      {booking.status}
-                    </span>
+                      <span>
+                        {booking.status}
+                      </span>
+                    </div>
+
+                    <button
+                      className="cancel-booking-button"
+                      onClick={() => {
+                        void handleCancelBooking(
+                          booking.id,
+                        )
+                      }}
+                      disabled={
+                        cancellingBookingId === booking.id
+                      }
+                    >
+                      {
+                        cancellingBookingId === booking.id
+                          ? "Cancelling..."
+                          : "Cancel"
+                      }
+                    </button>
                   </div>
                 </div>
               </article>

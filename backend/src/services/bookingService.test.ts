@@ -39,6 +39,7 @@ vi.mock(
 )
 
 import {
+  cancelBooking,
   clearBookings,
   createBooking,
   getBookings,
@@ -254,5 +255,44 @@ describe("bookingService", () => {
         userId: "user-1",
       },
     })
+  })
+
+  it("cancels one booking for the current user", async () => {
+    const result = {
+      count: 1,
+    }
+
+    mocks.bookingDeleteMany.mockResolvedValue(result)
+
+    await expect(
+      cancelBooking(
+        "booking-1",
+        "user-1",
+      ),
+    ).resolves.toEqual(result)
+
+    expect(
+      mocks.bookingDeleteMany,
+    ).toHaveBeenCalledWith({
+      where: {
+        id: "booking-1",
+        userId: "user-1",
+      },
+    })
+  })
+
+  it("throws when cancelling a missing booking", async () => {
+    mocks.bookingDeleteMany.mockResolvedValue({
+      count: 0,
+    })
+
+    await expect(
+      cancelBooking(
+        "booking-2",
+        "user-1",
+      ),
+    ).rejects.toThrow(
+      "Booking not found",
+    )
   })
 })
