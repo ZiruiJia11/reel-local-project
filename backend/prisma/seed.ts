@@ -27,56 +27,125 @@ async function main() {
       },
     })
 
-  await prisma.movie.createMany({
-    data: [
-      {
-        title: "Citizen Kane",
-        image: "/movies/citizen_kane.jpg",
-        genre: "Drama",
-        duration: "119 min",
-        description:
-          "A classic drama exploring power, ambition, memory and legacy through the life of a newspaper magnate.",
-        tenantId: tenant.id,
-      },
-      {
-        title: "The Princess Bride",
-        image: "/movies/princess_bride.jpg",
-        genre: "Adventure / Comedy",
-        duration: "98 min",
-        description:
-          "A charming fantasy adventure filled with romance, humour, sword fights and unforgettable characters.",
-        tenantId: tenant.id,
-      },
-      {
-        title: "Pulp Fiction",
-        image: "/movies/pulpfiction.jpg",
-        genre: "Crime / Drama",
-        duration: "154 min",
-        description:
-          "An iconic crime film with intersecting stories, sharp dialogue and a bold non-linear structure.",
-        tenantId: tenant.id,
-      },
-      {
-        title: "The Shawshank Redemption",
-        image: "/movies/shawshank.jpg",
-        genre: "Drama",
-        duration: "142 min",
-        description:
-          "A powerful story of hope, friendship and resilience inside a prison system.",
-        tenantId: tenant.id,
-      },
-      {
-        title: "The Third Man",
-        image: "/movies/third_man.jpg",
-        genre: "Film Noir",
-        duration: "104 min",
-        description:
-          "A stylish post-war mystery set in Vienna, known for its atmosphere, suspense and visual style.",
-        tenantId: tenant.id,
-      },
-    ],
-    skipDuplicates: true,
-  })
+  const movieSeeds = [
+    {
+      title: "Citizen Kane",
+      image:
+        "https://upload.wikimedia.org/wikipedia/commons/c/c0/Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg",
+      genre: "Drama / Mystery",
+      duration: "119 min",
+      description:
+        "Orson Welles' 1941 drama follows newspaper magnate Charles Foster Kane through the memories of the people who knew him, building a mystery around his final word.",
+    },
+    {
+      title: "The Princess Bride",
+      image:
+        "https://upload.wikimedia.org/wikipedia/en/d/db/Princess_bride.jpg",
+      genre: "Fantasy / Adventure / Comedy",
+      duration: "98 min",
+      description:
+        "Rob Reiner's 1987 fairy-tale adventure follows Westley and Buttercup through sword fights, giants, pirates and a warmly comic storybook romance.",
+    },
+    {
+      title: "Pulp Fiction",
+      image:
+        "https://upload.wikimedia.org/wikipedia/en/3/3b/Pulp_Fiction_%281994%29_poster.jpg",
+      genre: "Crime / Drama",
+      duration: "154 min",
+      description:
+        "Quentin Tarantino's 1994 crime film weaves together intersecting Los Angeles stories about hitmen, a boxer, gangsters and chance encounters.",
+    },
+    {
+      title: "The Shawshank Redemption",
+      image:
+        "https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg",
+      genre: "Drama",
+      duration: "142 min",
+      description:
+        "Frank Darabont's 1994 prison drama follows Andy Dufresne and Red through decades inside Shawshank, centering on friendship, patience and hope.",
+    },
+    {
+      title: "The Third Man",
+      image:
+        "https://upload.wikimedia.org/wikipedia/commons/7/77/The_Third_Man_%281949_American_theatrical_poster%29.jpg",
+      genre: "Film Noir / Mystery",
+      duration: "104 min",
+      description:
+        "Carol Reed's 1949 noir follows writer Holly Martins through post-war Vienna as he investigates the mysterious death of his friend Harry Lime.",
+    },
+    {
+      title: "Rear Window",
+      image:
+        "https://upload.wikimedia.org/wikipedia/commons/3/38/Rear_Window_film_poster.jpg",
+      genre: "Mystery / Thriller",
+      duration: "112 min",
+      description:
+        "Alfred Hitchcock's 1954 thriller follows a photographer confined to his apartment who begins to suspect a neighbour has committed murder.",
+    },
+    {
+      title: "Before Sunrise",
+      image:
+        "https://upload.wikimedia.org/wikipedia/en/d/da/Before_Sunrise_poster.jpg",
+      genre: "Romance / Drama",
+      duration: "101 min",
+      description:
+        "Richard Linklater's 1995 romance follows Jesse and Celine, two strangers who meet on a train and spend one night walking and talking in Vienna.",
+    },
+    {
+      title: "Moonlight",
+      image:
+        "https://upload.wikimedia.org/wikipedia/en/8/84/Moonlight_%282016_film%29.png",
+      genre: "Coming-of-Age Drama",
+      duration: "111 min",
+      description:
+        "Barry Jenkins' 2016 drama traces Chiron's life in three chapters as he grows up in Miami and searches for identity, intimacy and belonging.",
+    },
+    {
+      title: "Spirited Away",
+      image:
+        "https://upload.wikimedia.org/wikipedia/en/d/db/Spirited_Away_Japanese_poster.png",
+      genre: "Animation / Fantasy",
+      duration: "125 min",
+      description:
+        "Hayao Miyazaki's 2001 animated fantasy follows Chihiro into a spirit world, where she works in a bathhouse to rescue her transformed parents.",
+    },
+    {
+      title: "Mad Max: Fury Road",
+      image:
+        "https://upload.wikimedia.org/wikipedia/en/6/6e/Mad_Max_Fury_Road.jpg",
+      genre: "Action / Post-Apocalyptic",
+      duration: "120 min",
+      description:
+        "George Miller's 2015 action film follows Max and Imperator Furiosa across a wasteland in a high-speed escape from the warlord Immortan Joe.",
+    },
+  ]
+
+  for (const movieSeed of movieSeeds) {
+    const existingMovie =
+      await prisma.movie.findFirst({
+        where: {
+          tenantId: tenant.id,
+          title:
+            movieSeed.title,
+        },
+      })
+
+    if (existingMovie) {
+      await prisma.movie.update({
+        where: {
+          id: existingMovie.id,
+        },
+        data: movieSeed,
+      })
+    } else {
+      await prisma.movie.create({
+        data: {
+          ...movieSeed,
+          tenantId: tenant.id,
+        },
+      })
+    }
+  }
 
   const adminPassword =
     await bcrypt.hash(
