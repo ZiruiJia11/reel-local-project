@@ -17,6 +17,14 @@ import {
 import {
   authenticateUser,
 } from "./middleware/authMiddleware"
+import {
+  requireAdmin,
+} from "./middleware/adminMiddleware"
+import {
+  cancelAnyBooking,
+  getAdminBookings,
+  updateMovie,
+} from "./services/adminService"
 
 dotenv.config()
 
@@ -209,6 +217,87 @@ app.delete("/api/bookings/:bookingId", authenticateUser, async (req, res) => {
     })
   }
 })
+
+app.patch(
+  "/api/admin/movies/:movieId",
+  authenticateUser,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const movieId =
+        req.params.movieId
+
+      if (typeof movieId !== "string") {
+        return res.status(400).json({
+          message: "Movie id is required",
+        })
+      }
+
+      const movie =
+        await updateMovie(
+          movieId,
+          req.body,
+        )
+
+      res.json(movie)
+    } catch (error) {
+      res.status(400).json({
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to update movie",
+      })
+    }
+  },
+)
+
+app.get(
+  "/api/admin/bookings",
+  authenticateUser,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const bookings =
+        await getAdminBookings()
+
+      res.json(bookings)
+    } catch {
+      res.status(500).json({
+        message: "Failed to fetch bookings",
+      })
+    }
+  },
+)
+
+app.delete(
+  "/api/admin/bookings/:bookingId",
+  authenticateUser,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const bookingId =
+        req.params.bookingId
+
+      if (typeof bookingId !== "string") {
+        return res.status(400).json({
+          message: "Booking id is required",
+        })
+      }
+
+      await cancelAnyBooking(
+        bookingId,
+      )
+
+      res.json({
+        message: "Booking cancelled",
+      })
+    } catch {
+      res.status(500).json({
+        message: "Failed to cancel booking",
+      })
+    }
+  },
+)
 
 const PORT = process.env.PORT || 3001
 

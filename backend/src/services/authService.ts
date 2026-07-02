@@ -94,6 +94,7 @@ export async function loginUser(
       {
         userId: user.id,
         email: user.email,
+        role: user.role,
       },
       JWT_SECRET,
       {

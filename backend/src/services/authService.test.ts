@@ -137,6 +137,7 @@ describe("authService", () => {
       id: "user-1",
       email: "demo@example.com",
       password: "hashed-password",
+      role: "ADMIN",
     }
 
     mocks.userFindUnique.mockResolvedValue(user)
@@ -159,6 +160,7 @@ describe("authService", () => {
       {
         userId: "user-1",
         email: "demo@example.com",
+        role: "ADMIN",
       },
       "development-secret",
       {

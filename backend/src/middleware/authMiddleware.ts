@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken"
 type AuthenticatedUser = {
   userId: string
   email: string
+  role: string
 }
 
 declare global {
@@ -67,6 +68,10 @@ export function authenticateUser(
         payload.userId,
       email:
         payload.email,
+      role:
+        typeof payload.role === "string"
+          ? payload.role
+          : "USER",
     }
 
     return next()

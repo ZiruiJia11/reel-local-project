@@ -1,5 +1,7 @@
 import "dotenv/config"
 
+import bcrypt from "bcrypt"
+
 import { PrismaClient } from "../src/generated/prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 
@@ -36,6 +38,41 @@ const SHOWTIME_TEMPLATES = [
 ]
 
 async function main() {
+  const tenant =
+    await prisma.tenant.findFirst()
+
+  if (tenant) {
+    const adminPassword =
+      await bcrypt.hash(
+        process.env.ADMIN_PASSWORD ||
+          "Admin123!",
+        10,
+      )
+
+    await prisma.user.upsert({
+      where: {
+        email:
+          process.env.ADMIN_EMAIL ||
+          "admin@reellocal.test",
+      },
+      update: {
+        name: "Reel Local Admin",
+        role: "ADMIN",
+        tenantId: tenant.id,
+      },
+      create: {
+        name: "Reel Local Admin",
+        email:
+          process.env.ADMIN_EMAIL ||
+          "admin@reellocal.test",
+        password:
+          adminPassword,
+        role: "ADMIN",
+        tenantId: tenant.id,
+      },
+    })
+  }
+
   const movies =
     await prisma.movie.findMany({
       include: {

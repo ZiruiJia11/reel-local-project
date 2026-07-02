@@ -1,5 +1,7 @@
 import "dotenv/config"
 
+import bcrypt from "bcrypt"
+
 import { PrismaClient } from "../src/generated/prisma/client"
 
 import { PrismaPg } from "@prisma/adapter-pg"
@@ -74,6 +76,30 @@ async function main() {
       },
     ],
     skipDuplicates: true,
+  })
+
+  const adminPassword =
+    await bcrypt.hash(
+      "Admin123!",
+      10,
+    )
+
+  await prisma.user.upsert({
+    where: {
+      email: "admin@reellocal.test",
+    },
+    update: {
+      name: "Reel Local Admin",
+      role: "ADMIN",
+      tenantId: tenant.id,
+    },
+    create: {
+      name: "Reel Local Admin",
+      email: "admin@reellocal.test",
+      password: adminPassword,
+      role: "ADMIN",
+      tenantId: tenant.id,
+    },
   })
 
   const movies =

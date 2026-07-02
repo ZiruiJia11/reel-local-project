@@ -71,6 +71,7 @@ describe("authenticateUser", () => {
     expect(req.user).toEqual({
       userId: "user-1",
       email: "demo@example.com",
+      role: "USER",
     })
 
     expect(next).toHaveBeenCalled()

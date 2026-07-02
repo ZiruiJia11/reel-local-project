@@ -15,10 +15,12 @@ from "../services/authService"
 
 type Props = {
   children: ReactNode
+  requiredRole?: string
 }
 
 function ProtectedRoute({
   children,
+  requiredRole,
 }: Props) {
 
   const user =
@@ -32,6 +34,17 @@ function ProtectedRoute({
       />
     )
 
+  }
+
+  if (
+    requiredRole &&
+    user.role !== requiredRole
+  ) {
+    return (
+      <Navigate
+        to="/"
+      />
+    )
   }
 
   return children
