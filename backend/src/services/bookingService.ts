@@ -25,6 +25,10 @@ export async function createBooking(
     throw new Error("User not found")
   }
 
+  if (user.role === "ADMIN") {
+    throw new Error("Admins cannot book tickets")
+  }
+
   const showtime =
     await prisma.showtime.findFirst({
       where: {

@@ -35,6 +35,9 @@ function MovieDetails() {
   const user =
     getCurrentUser()
 
+  const isAdmin =
+    user?.role === "ADMIN"
+
   const [movie, setMovie] =
     useState<Movie | null>(null)
 
@@ -225,6 +228,7 @@ function MovieDetails() {
 
           {
             user &&
+            !isAdmin &&
             (
               <button
                 onClick={handleBooking}
@@ -253,6 +257,15 @@ function MovieDetails() {
             (
               <p>
                 Please log in to book tickets.
+              </p>
+            )
+          }
+
+          {
+            isAdmin &&
+            (
+              <p>
+                Admins manage movies and orders from the Admin page.
               </p>
             )
           }

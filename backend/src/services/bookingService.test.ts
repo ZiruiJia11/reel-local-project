@@ -257,6 +257,25 @@ describe("bookingService", () => {
     })
   })
 
+  it("throws when an admin tries to book tickets", async () => {
+    mocks.userFindUnique.mockResolvedValue({
+      id: "admin-1",
+      tenantId: "tenant-1",
+      role: "ADMIN",
+    })
+
+    await expect(
+      createBooking(
+        "movie-1",
+        "admin-1",
+        "showtime-1",
+        1,
+      ),
+    ).rejects.toThrow(
+      "Admins cannot book tickets",
+    )
+  })
+
   it("cancels one booking for the current user", async () => {
     const result = {
       count: 1,

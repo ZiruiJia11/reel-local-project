@@ -22,8 +22,13 @@ import {
 } from "./middleware/adminMiddleware"
 import {
   cancelAnyBooking,
+  createMovie,
+  createShowtime,
+  deleteMovie,
+  deleteShowtime,
   getAdminBookings,
   updateMovie,
+  updateShowtime,
 } from "./services/adminService"
 
 dotenv.config()
@@ -246,6 +251,151 @@ app.patch(
           error instanceof Error
             ? error.message
             : "Failed to update movie",
+      })
+    }
+  },
+)
+
+app.post(
+  "/api/admin/movies",
+  authenticateUser,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const movie =
+        await createMovie(
+          req.body,
+        )
+
+      res.status(201).json(movie)
+    } catch (error) {
+      res.status(400).json({
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to create movie",
+      })
+    }
+  },
+)
+
+app.delete(
+  "/api/admin/movies/:movieId",
+  authenticateUser,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const movieId =
+        req.params.movieId
+
+      if (typeof movieId !== "string") {
+        return res.status(400).json({
+          message: "Movie id is required",
+        })
+      }
+
+      await deleteMovie(movieId)
+
+      res.json({
+        message: "Movie deleted",
+      })
+    } catch {
+      res.status(500).json({
+        message: "Failed to delete movie",
+      })
+    }
+  },
+)
+
+app.post(
+  "/api/admin/movies/:movieId/showtimes",
+  authenticateUser,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const movieId =
+        req.params.movieId
+
+      if (typeof movieId !== "string") {
+        return res.status(400).json({
+          message: "Movie id is required",
+        })
+      }
+
+      const showtime =
+        await createShowtime(
+          movieId,
+          req.body,
+        )
+
+      res.status(201).json(showtime)
+    } catch (error) {
+      res.status(400).json({
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to create showtime",
+      })
+    }
+  },
+)
+
+app.patch(
+  "/api/admin/showtimes/:showtimeId",
+  authenticateUser,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const showtimeId =
+        req.params.showtimeId
+
+      if (typeof showtimeId !== "string") {
+        return res.status(400).json({
+          message: "Showtime id is required",
+        })
+      }
+
+      const showtime =
+        await updateShowtime(
+          showtimeId,
+          req.body,
+        )
+
+      res.json(showtime)
+    } catch (error) {
+      res.status(400).json({
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to update showtime",
+      })
+    }
+  },
+)
+
+app.delete(
+  "/api/admin/showtimes/:showtimeId",
+  authenticateUser,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const showtimeId =
+        req.params.showtimeId
+
+      if (typeof showtimeId !== "string") {
+        return res.status(400).json({
+          message: "Showtime id is required",
+        })
+      }
+
+      await deleteShowtime(showtimeId)
+
+      res.json({
+        message: "Showtime deleted",
+      })
+    } catch {
+      res.status(500).json({
+        message: "Failed to delete showtime",
       })
     }
   },

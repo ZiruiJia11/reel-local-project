@@ -77,6 +77,40 @@ describe("authenticateUser", () => {
     expect(next).toHaveBeenCalled()
   })
 
+  it("uses the role from the token when present", () => {
+    const req = {
+      headers: {
+        authorization:
+          "Bearer admin-token",
+      },
+    } as Request
+
+    const res =
+      createResponse()
+
+    const next =
+      vi.fn() as NextFunction
+
+    mocks.verify.mockReturnValue({
+      userId: "admin-1",
+      email: "admin@example.com",
+      role: "ADMIN",
+    })
+
+    authenticateUser(
+      req,
+      res,
+      next,
+    )
+
+    expect(req.user).toEqual({
+      userId: "admin-1",
+      email: "admin@example.com",
+      role: "ADMIN",
+    })
+  })
+
+
   it("rejects requests without a bearer token", () => {
     const req = {
       headers: {},

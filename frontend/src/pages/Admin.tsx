@@ -6,12 +6,21 @@ import {
 import { getMovies } from "../services/movieApi"
 import {
   cancelAdminBooking,
+  createMovie,
+  createShowtime,
+  deleteMovie,
+  deleteShowtime,
   getAdminBookings,
   updateMovie,
+  updateShowtime,
   type AdminBooking,
   type MovieUpdate,
+  type ShowtimeUpdate,
 } from "../services/adminService"
-import type { Movie } from "../types/Movie"
+import type {
+  Movie,
+  Showtime,
+} from "../types/Movie"
 
 import "./Admin.css"
 
@@ -39,6 +48,45 @@ function toMovieForm(movie: Movie): MovieUpdate {
   }
 }
 
+function emptyMovieForm(): MovieUpdate {
+  return {
+    title: "",
+    image: "/movies/",
+    genre: "",
+    duration: "",
+    description: "",
+  }
+}
+
+function toDatetimeInput(value: string) {
+  const date =
+    new Date(value)
+
+  const localDate =
+    new Date(
+      date.getTime() -
+        date.getTimezoneOffset() *
+          60000,
+    )
+
+  return localDate
+    .toISOString()
+    .slice(0, 16)
+}
+
+function toShowtimeForm(
+  showtime: Showtime,
+): ShowtimeUpdate {
+  return {
+    startsAt:
+      toDatetimeInput(
+        showtime.startsAt,
+      ),
+    capacity:
+      showtime.capacity,
+  }
+}
+
 function Admin() {
   const [movies, setMovies] =
     useState<Movie[]>([])
@@ -56,6 +104,21 @@ function Admin() {
     useState(false)
   const [cancellingBookingId, setCancellingBookingId] =
     useState("")
+  const [deletingMovie, setDeletingMovie] =
+    useState(false)
+  const [showtimeForms, setShowtimeForms] =
+    useState<Record<string, ShowtimeUpdate>>({})
+  const [newShowtimeForm, setNewShowtimeForm] =
+    useState<ShowtimeUpdate>({
+      startsAt: "",
+      capacity: 40,
+    })
+
+  const selectedMovie =
+    movies.find(
+      movie =>
+        movie.id === selectedMovieId,
+    )
 
   useEffect(() => {
     async function loadAdminData() {
@@ -77,6 +140,16 @@ function Admin() {
           setMovieForm(
             toMovieForm(movieData[0]),
           )
+          setShowtimeForms(
+            Object.fromEntries(
+              movieData[0].showtimes.map(
+                showtime => [
+                  showtime.id,
+                  toShowtimeForm(showtime),
+                ],
+              ),
+            ),
+          )
         }
       } catch (error) {
         setErrorMessage(
@@ -91,6 +164,15 @@ function Admin() {
   }, [])
 
   function handleMovieChange(movieId: string) {
+    if (movieId === "new") {
+      setSelectedMovieId("new")
+      setMovieForm(emptyMovieForm())
+      setShowtimeForms({})
+      setMessage("")
+      setErrorMessage("")
+      return
+    }
+
     const movie =
       movies.find(
         item =>
@@ -102,6 +184,18 @@ function Admin() {
       movie
         ? toMovieForm(movie)
         : null,
+    )
+    setShowtimeForms(
+      movie
+        ? Object.fromEntries(
+            movie.showtimes.map(
+              showtime => [
+                showtime.id,
+                toShowtimeForm(showtime),
+              ],
+            ),
+          )
+        : {},
     )
     setMessage("")
     setErrorMessage("")
@@ -130,22 +224,42 @@ function Admin() {
       setSavingMovie(true)
 
       const updatedMovie =
-        await updateMovie(
-          selectedMovieId,
-          movieForm,
-        )
+        selectedMovieId === "new"
+          ? await createMovie(movieForm)
+          : await updateMovie(
+              selectedMovieId,
+              movieForm,
+            )
 
       setMovies(currentMovies =>
-        currentMovies.map(movie =>
-          movie.id === updatedMovie.id
-            ? {
-                ...movie,
+        selectedMovieId === "new"
+          ? [
+              ...currentMovies,
+              {
                 ...updatedMovie,
-              }
-            : movie,
-        ),
+                showtimes:
+                  updatedMovie.showtimes || [],
+              },
+            ]
+          : currentMovies.map(movie =>
+              movie.id === updatedMovie.id
+                ? {
+                    ...movie,
+                    ...updatedMovie,
+                  }
+                : movie,
+            ),
       )
-      setMessage("Movie updated")
+      setSelectedMovieId(updatedMovie.id)
+      setMovieForm(
+        toMovieForm(updatedMovie),
+      )
+      setShowtimeForms({})
+      setMessage(
+        selectedMovieId === "new"
+          ? "Movie added"
+          : "Movie updated",
+      )
       setErrorMessage("")
     } catch (error) {
       setErrorMessage(
@@ -155,6 +269,227 @@ function Admin() {
       )
     } finally {
       setSavingMovie(false)
+    }
+  }
+
+  async function handleDeleteMovie() {
+    if (
+      selectedMovieId === "new" ||
+      !selectedMovie
+    ) {
+      return
+    }
+
+    const confirmed =
+      window.confirm(
+        `Delete ${selectedMovie.title}? This also removes its showtimes and bookings.`,
+      )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      setDeletingMovie(true)
+
+      await deleteMovie(
+        selectedMovie.id,
+      )
+
+      const remainingMovies =
+        movies.filter(
+          movie =>
+            movie.id !== selectedMovie.id,
+        )
+
+      setMovies(remainingMovies)
+      setBookings(currentBookings =>
+        currentBookings.filter(
+          booking =>
+            booking.movie.title !==
+              selectedMovie.title,
+        ),
+      )
+
+      if (remainingMovies[0]) {
+        handleMovieChange(
+          remainingMovies[0].id,
+        )
+      } else {
+        setSelectedMovieId("new")
+        setMovieForm(emptyMovieForm())
+        setShowtimeForms({})
+      }
+
+      setMessage("Movie deleted")
+      setErrorMessage("")
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete movie",
+      )
+    } finally {
+      setDeletingMovie(false)
+    }
+  }
+
+  function updateShowtimeField(
+    showtimeId: string,
+    field: keyof ShowtimeUpdate,
+    value: string,
+  ) {
+    setShowtimeForms(current => ({
+      ...current,
+      [showtimeId]: {
+        ...current[showtimeId],
+        [field]:
+          field === "capacity"
+            ? Number(value)
+            : value,
+      },
+    }))
+  }
+
+  async function handleSaveShowtime(
+    showtimeId: string,
+  ) {
+    const showtimeForm =
+      showtimeForms[showtimeId]
+
+    if (!showtimeForm) {
+      return
+    }
+
+    try {
+      const updatedShowtime =
+        await updateShowtime(
+          showtimeId,
+          showtimeForm,
+        )
+
+      setMovies(currentMovies =>
+        currentMovies.map(movie =>
+          movie.id === selectedMovieId
+            ? {
+                ...movie,
+                showtimes:
+                  movie.showtimes.map(showtime =>
+                    showtime.id === showtimeId
+                      ? {
+                          ...showtime,
+                          ...updatedShowtime,
+                        }
+                      : showtime,
+                  ),
+              }
+            : movie,
+        ),
+      )
+      setMessage("Showtime updated")
+      setErrorMessage("")
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Failed to update showtime",
+      )
+    }
+  }
+
+  async function handleAddShowtime() {
+    if (
+      selectedMovieId === "new" ||
+      !newShowtimeForm.startsAt
+    ) {
+      return
+    }
+
+    try {
+      const createdShowtime =
+        await createShowtime(
+          selectedMovieId,
+          newShowtimeForm,
+        )
+
+      setMovies(currentMovies =>
+        currentMovies.map(movie =>
+          movie.id === selectedMovieId
+            ? {
+                ...movie,
+                showtimes: [
+                  ...movie.showtimes,
+                  {
+                    ...createdShowtime,
+                    remainingTickets:
+                      createdShowtime.capacity,
+                  },
+                ],
+              }
+            : movie,
+        ),
+      )
+      setShowtimeForms(current => ({
+        ...current,
+        [createdShowtime.id]:
+          toShowtimeForm({
+            ...createdShowtime,
+            remainingTickets:
+              createdShowtime.capacity,
+          }),
+      }))
+      setNewShowtimeForm({
+        startsAt: "",
+        capacity: 40,
+      })
+      setMessage("Showtime added")
+      setErrorMessage("")
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Failed to add showtime",
+      )
+    }
+  }
+
+  async function handleDeleteShowtime(
+    showtimeId: string,
+  ) {
+    try {
+      await deleteShowtime(showtimeId)
+
+      setMovies(currentMovies =>
+        currentMovies.map(movie =>
+          movie.id === selectedMovieId
+            ? {
+                ...movie,
+                showtimes:
+                  movie.showtimes.filter(
+                    showtime =>
+                      showtime.id !== showtimeId,
+                  ),
+              }
+            : movie,
+        ),
+      )
+      setShowtimeForms(current => {
+        const next = {
+          ...current,
+        }
+
+        delete next[showtimeId]
+
+        return next
+      })
+      setMessage("Showtime deleted")
+      setErrorMessage("")
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete showtime",
+      )
     }
   }
 
@@ -232,6 +567,12 @@ function Admin() {
               )
             }
           >
+            {
+              <option value="new">
+                Add new movie
+              </option>
+            }
+
             {
               movies.map(movie => (
                 <option
@@ -323,13 +664,163 @@ function Admin() {
                 {
                   savingMovie
                     ? "Saving..."
-                    : "Save movie"
+                    : selectedMovieId === "new"
+                      ? "Add movie"
+                      : "Save movie"
                 }
               </button>
+
+              {
+                selectedMovieId !== "new" &&
+                (
+                  <button
+                    className="admin-danger-button"
+                    onClick={() => {
+                      void handleDeleteMovie()
+                    }}
+                    disabled={deletingMovie}
+                  >
+                    {
+                      deletingMovie
+                        ? "Deleting..."
+                        : "Delete movie"
+                    }
+                  </button>
+                )
+              }
             </div>
           )
         }
       </section>
+
+      {
+        selectedMovieId !== "new" &&
+        selectedMovie &&
+        (
+          <section className="admin-section">
+            <div className="admin-section-heading">
+              <h2>
+                Showtimes
+              </h2>
+
+              <span>
+                {selectedMovie.showtimes.length} listed
+              </span>
+            </div>
+
+            <div className="admin-showtime-list">
+              {
+                selectedMovie.showtimes.map(showtime => (
+                  <div
+                    className="admin-showtime-row"
+                    key={showtime.id}
+                  >
+                    <label>
+                      Starts at
+                      <input
+                        type="datetime-local"
+                        value={
+                          showtimeForms[showtime.id]?.startsAt ||
+                          ""
+                        }
+                        onChange={event =>
+                          updateShowtimeField(
+                            showtime.id,
+                            "startsAt",
+                            event.target.value,
+                          )
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      Capacity
+                      <input
+                        type="number"
+                        min="1"
+                        value={
+                          showtimeForms[showtime.id]?.capacity ||
+                          1
+                        }
+                        onChange={event =>
+                          updateShowtimeField(
+                            showtime.id,
+                            "capacity",
+                            event.target.value,
+                          )
+                        }
+                      />
+                    </label>
+
+                    <button
+                      onClick={() => {
+                        void handleSaveShowtime(
+                          showtime.id,
+                        )
+                      }}
+                    >
+                      Save
+                    </button>
+
+                    <button
+                      className="admin-danger-button"
+                      onClick={() => {
+                        void handleDeleteShowtime(
+                          showtime.id,
+                        )
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))
+              }
+
+              <div className="admin-showtime-row">
+                <label>
+                  New starts at
+                  <input
+                    type="datetime-local"
+                    value={newShowtimeForm.startsAt}
+                    onChange={event =>
+                      setNewShowtimeForm(current => ({
+                        ...current,
+                        startsAt:
+                          event.target.value,
+                      }))
+                    }
+                  />
+                </label>
+
+                <label>
+                  Capacity
+                  <input
+                    type="number"
+                    min="1"
+                    value={newShowtimeForm.capacity}
+                    onChange={event =>
+                      setNewShowtimeForm(current => ({
+                        ...current,
+                        capacity:
+                          Number(event.target.value),
+                      }))
+                    }
+                  />
+                </label>
+
+                <button
+                  onClick={() => {
+                    void handleAddShowtime()
+                  }}
+                  disabled={!newShowtimeForm.startsAt}
+                >
+                  Add time
+                </button>
+              </div>
+            </div>
+          </section>
+        )
+      }
 
       <section className="admin-section">
         <div className="admin-section-heading">
