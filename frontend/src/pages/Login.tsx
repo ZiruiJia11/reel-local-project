@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 import { login } from "../services/authService"
+import { showToast } from "../services/toastService"
 
 function Login() {
 
@@ -12,9 +13,6 @@ function Login() {
     useState("")
 
   const [password, setPassword] =
-    useState("")
-
-  const [error, setError] =
     useState("")
 
   async function handleSubmit(
@@ -30,16 +28,22 @@ function Login() {
         password,
       )
 
+      showToast(
+        "Logged in successfully",
+        "success",
+      )
+
       navigate(
         "/profile"
       )
 
     } catch (error) {
 
-      setError(
+      showToast(
         error instanceof Error
           ? error.message
-          : "Invalid email or password"
+          : "Invalid email or password",
+        "error",
       )
 
     }
@@ -57,15 +61,6 @@ function Login() {
         <h1>
           Login
         </h1>
-
-        {
-          error &&
-          (
-            <p>
-              {error}
-            </p>
-          )
-        }
 
         <label>
           Email

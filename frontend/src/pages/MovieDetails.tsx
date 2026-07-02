@@ -11,6 +11,7 @@ import {
   logout,
 } from "../services/authService"
 import { isAuthError } from "../services/apiError"
+import { showToast } from "../services/toastService"
 
 import type { Movie } from "../types/Movie"
 
@@ -49,9 +50,6 @@ function MovieDetails() {
 
   const [ticketCount, setTicketCount] =
     useState(1)
-
-  const [bookingMessage, setBookingMessage] =
-    useState("")
 
   const selectedShowtime =
     useMemo(
@@ -98,8 +96,9 @@ function MovieDetails() {
       !movie ||
       !selectedShowtime
     ) {
-      setBookingMessage(
-        "Please choose a time"
+      showToast(
+        "Please choose a time",
+        "info",
       )
       return
     }
@@ -111,8 +110,9 @@ function MovieDetails() {
         ticketCount,
       )
 
-      setBookingMessage(
-        `${ticketCount} ticket${ticketCount === 1 ? "" : "s"} booked`
+      showToast(
+        `${ticketCount} ticket${ticketCount === 1 ? "" : "s"} booked`,
+        "success",
       )
     } catch (error) {
       const message =
@@ -120,7 +120,7 @@ function MovieDetails() {
           ? error.message
           : "Failed to book seat"
 
-      setBookingMessage(message)
+      showToast(message, "error")
 
       if (isAuthError(error)) {
         logout()
@@ -188,7 +188,6 @@ function MovieDetails() {
                       setSelectedShowtimeId(
                         showtime.id,
                       )
-                      setBookingMessage("")
                     }}
                   />
 
@@ -240,15 +239,6 @@ function MovieDetails() {
               >
                 Book Tickets
               </button>
-            )
-          }
-
-          {
-            bookingMessage &&
-            (
-              <p className="booking-message">
-                {bookingMessage}
-              </p>
             )
           }
 

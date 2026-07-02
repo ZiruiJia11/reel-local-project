@@ -43,15 +43,6 @@ function Navbar() {
 
         {
           user &&
-          (
-            <Link to="/schedule">
-              Schedule
-            </Link>
-          )
-        }
-
-        {
-          user &&
           user.role === "ADMIN" &&
           (
             <Link to="/admin">

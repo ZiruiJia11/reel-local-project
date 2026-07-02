@@ -17,6 +17,7 @@ import {
   type MovieUpdate,
   type ShowtimeUpdate,
 } from "../services/adminService"
+import { showToast } from "../services/toastService"
 import type {
   Movie,
   Showtime,
@@ -96,10 +97,6 @@ function Admin() {
     useState<MovieUpdate | null>(null)
   const [bookings, setBookings] =
     useState<AdminBooking[]>([])
-  const [message, setMessage] =
-    useState("")
-  const [errorMessage, setErrorMessage] =
-    useState("")
   const [savingMovie, setSavingMovie] =
     useState(false)
   const [cancellingBookingId, setCancellingBookingId] =
@@ -152,10 +149,11 @@ function Admin() {
           )
         }
       } catch (error) {
-        setErrorMessage(
+        showToast(
           error instanceof Error
             ? error.message
             : "Failed to load admin data",
+          "error",
         )
       }
     }
@@ -168,9 +166,7 @@ function Admin() {
       setSelectedMovieId("new")
       setMovieForm(emptyMovieForm())
       setShowtimeForms({})
-      setMessage("")
-      setErrorMessage("")
-      return
+    return
     }
 
     const movie =
@@ -197,8 +193,6 @@ function Admin() {
           )
         : {},
     )
-    setMessage("")
-    setErrorMessage("")
   }
 
   function updateFormField(
@@ -255,17 +249,18 @@ function Admin() {
         toMovieForm(updatedMovie),
       )
       setShowtimeForms({})
-      setMessage(
+      showToast(
         selectedMovieId === "new"
           ? "Movie added"
           : "Movie updated",
+        "success",
       )
-      setErrorMessage("")
     } catch (error) {
-      setErrorMessage(
+      showToast(
         error instanceof Error
           ? error.message
           : "Failed to update movie",
+        "error",
       )
     } finally {
       setSavingMovie(false)
@@ -321,13 +316,16 @@ function Admin() {
         setShowtimeForms({})
       }
 
-      setMessage("Movie deleted")
-      setErrorMessage("")
+      showToast(
+        "Movie deleted",
+        "success",
+      )
     } catch (error) {
-      setErrorMessage(
+      showToast(
         error instanceof Error
           ? error.message
           : "Failed to delete movie",
+        "error",
       )
     } finally {
       setDeletingMovie(false)
@@ -386,13 +384,16 @@ function Admin() {
             : movie,
         ),
       )
-      setMessage("Showtime updated")
-      setErrorMessage("")
+      showToast(
+        "Showtime updated",
+        "success",
+      )
     } catch (error) {
-      setErrorMessage(
+      showToast(
         error instanceof Error
           ? error.message
           : "Failed to update showtime",
+        "error",
       )
     }
   }
@@ -442,13 +443,16 @@ function Admin() {
         startsAt: "",
         capacity: 40,
       })
-      setMessage("Showtime added")
-      setErrorMessage("")
+      showToast(
+        "Showtime added",
+        "success",
+      )
     } catch (error) {
-      setErrorMessage(
+      showToast(
         error instanceof Error
           ? error.message
           : "Failed to add showtime",
+        "error",
       )
     }
   }
@@ -482,13 +486,16 @@ function Admin() {
 
         return next
       })
-      setMessage("Showtime deleted")
-      setErrorMessage("")
+      showToast(
+        "Showtime deleted",
+        "success",
+      )
     } catch (error) {
-      setErrorMessage(
+      showToast(
         error instanceof Error
           ? error.message
           : "Failed to delete showtime",
+        "error",
       )
     }
   }
@@ -507,13 +514,16 @@ function Admin() {
             booking.id !== bookingId,
         ),
       )
-      setMessage("Booking cancelled")
-      setErrorMessage("")
+      showToast(
+        "Booking cancelled",
+        "success",
+      )
     } catch (error) {
-      setErrorMessage(
+      showToast(
         error instanceof Error
           ? error.message
           : "Failed to cancel booking",
+        "error",
       )
     } finally {
       setCancellingBookingId("")
@@ -533,24 +543,6 @@ function Admin() {
           </p>
         </div>
       </header>
-
-      {
-        message &&
-        (
-          <p className="admin-success">
-            {message}
-          </p>
-        )
-      }
-
-      {
-        errorMessage &&
-        (
-          <p className="admin-error">
-            {errorMessage}
-          </p>
-        )
-      }
 
       <section className="admin-section">
         <h2>

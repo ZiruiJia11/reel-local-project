@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 import { register } from "../services/authService"
+import { showToast } from "../services/toastService"
 
 function Register() {
   const navigate =
@@ -16,9 +17,6 @@ function Register() {
   const [password, setPassword] =
     useState("")
 
-  const [error, setError] =
-    useState("")
-
   async function handleSubmit(
     event: React.FormEvent
   ) {
@@ -31,10 +29,18 @@ function Register() {
         password,
       )
 
+      showToast(
+        "Account created. Please log in.",
+        "success",
+      )
+
       navigate("/login")
-    } catch {
-      setError(
-        "Registration failed"
+    } catch (error) {
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Registration failed",
+        "error",
       )
     }
   }
@@ -48,15 +54,6 @@ function Register() {
         <h1>
           Register
         </h1>
-
-        {
-          error &&
-          (
-            <p>
-              {error}
-            </p>
-          )
-        }
 
         <label>
           Name

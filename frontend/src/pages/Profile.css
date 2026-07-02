@@ -1,0 +1,141 @@
+.profile-page {
+  max-width: 980px;
+  margin: 0 auto;
+  display: grid;
+  gap: 22px;
+}
+
+.profile-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.profile-header h1 {
+  font-size: 42px;
+  margin: 0 0 8px;
+}
+
+.profile-header p,
+.profile-panel p,
+.profile-booking-row p {
+  color: #666;
+  margin: 0;
+}
+
+.profile-summary {
+  background: white;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  min-width: 160px;
+  padding: 14px;
+}
+
+.profile-summary strong {
+  font-size: 28px;
+}
+
+.profile-panel {
+  background: white;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.profile-section-heading {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.profile-section-heading h2,
+.profile-empty h3,
+.profile-booking-row h3 {
+  margin: 0 0 6px;
+}
+
+.profile-section-heading button,
+.profile-booking-row button {
+  background: #1f1f1f;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 11px 14px;
+}
+
+.profile-section-heading button:disabled,
+.profile-booking-row button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+.profile-empty {
+  border: 1px dashed #d8d8d8;
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.profile-booking-list {
+  display: grid;
+  gap: 12px;
+}
+
+.profile-booking-row {
+  align-items: center;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 72px 1fr auto auto;
+  padding: 12px;
+}
+
+.profile-booking-row img {
+  border-radius: 6px;
+  height: 96px;
+  object-fit: cover;
+  width: 72px;
+}
+
+.profile-booking-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-booking-meta span {
+  background: #f4f4f4;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 8px 10px;
+}
+
+@media (max-width: 720px) {
+  .profile-header,
+  .profile-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-booking-row {
+    grid-template-columns: 64px 1fr;
+  }
+
+  .profile-booking-row img {
+    height: 86px;
+    width: 64px;
+  }
+
+  .profile-booking-meta,
+  .profile-booking-row button {
+    grid-column: 1 / -1;
+  }
+}
