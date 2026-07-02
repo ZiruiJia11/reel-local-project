@@ -111,17 +111,10 @@ export async function cancelBooking(
   bookingId: string,
   userId: string,
 ) {
-  const result =
-    await prisma.booking.deleteMany({
-      where: {
-        id: bookingId,
-        userId,
-      },
-    })
-
-  if (result.count === 0) {
-    throw new Error("Booking not found")
-  }
-
-  return result
+  return prisma.booking.deleteMany({
+    where: {
+      id: bookingId,
+      userId,
+    },
+  })
 }

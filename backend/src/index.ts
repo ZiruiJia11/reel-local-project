@@ -201,7 +201,7 @@ app.delete("/api/bookings/:bookingId", authenticateUser, async (req, res) => {
       message: "Booking cancelled",
     })
   } catch (error) {
-    res.status(404).json({
+    res.status(500).json({
       message:
         error instanceof Error
           ? error.message

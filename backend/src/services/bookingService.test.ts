@@ -281,18 +281,18 @@ describe("bookingService", () => {
     })
   })
 
-  it("throws when cancelling a missing booking", async () => {
-    mocks.bookingDeleteMany.mockResolvedValue({
+  it("treats an already missing booking as cancelled", async () => {
+    const result = {
       count: 0,
-    })
+    }
+
+    mocks.bookingDeleteMany.mockResolvedValue(result)
 
     await expect(
       cancelBooking(
         "booking-2",
         "user-1",
       ),
-    ).rejects.toThrow(
-      "Booking not found",
-    )
+    ).resolves.toEqual(result)
   })
 })
