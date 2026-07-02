@@ -20,6 +20,31 @@
   gap: 14px;
 }
 
+.movie-section {
+  display: grid;
+  gap: 14px;
+}
+
+.movie-section-heading {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.movie-section-heading h2 {
+  font-size: 26px;
+  margin: 0;
+}
+
+.movie-section-heading span {
+  background: #f4f4f4;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 8px 10px;
+}
+
 .movie-info-row {
   align-items: center;
   background: white;
@@ -29,6 +54,15 @@
   gap: 18px;
   grid-template-columns: 92px 1fr 190px;
   padding: 14px;
+}
+
+.movie-empty-state {
+  background: white;
+  border: 1px dashed #d8d8d8;
+  border-radius: 8px;
+  color: #666;
+  margin: 0;
+  padding: 18px;
 }
 
 .movie-info-row img {

@@ -53,6 +53,10 @@ function getMovieStatus(movie: Movie) {
     : "Coming soon"
 }
 
+function isShowingNow(movie: Movie) {
+  return getMovieStatus(movie) === "Now showing"
+}
+
 function Movies() {
   const navigate =
     useNavigate()
@@ -91,6 +95,65 @@ function Movies() {
     )
   }
 
+  const showingNow =
+    movies.filter(isShowingNow)
+
+  const comingSoon =
+    movies.filter(
+      movie =>
+        !isShowingNow(movie),
+    )
+
+  function renderMovieRow(movie: Movie) {
+    return (
+      <article
+        className="movie-info-row"
+        key={movie.id}
+      >
+        <img
+          src={movie.image}
+          alt={movie.title}
+        />
+
+        <div className="movie-info-copy">
+          <div className="movie-info-title">
+            <h2>
+              {movie.title}
+            </h2>
+
+            <span>
+              {getMovieStatus(movie)}
+            </span>
+          </div>
+
+          <p>
+            {movie.genre} · {movie.duration}
+          </p>
+
+          <p>
+            {movie.description}
+          </p>
+        </div>
+
+        <div className="movie-info-action">
+          <strong>
+            {formatNextShowtime(movie)}
+          </strong>
+
+          <button
+            onClick={() =>
+              navigate(
+                `/movies/${movie.id}`,
+              )
+            }
+          >
+            Details
+          </button>
+        </div>
+      </article>
+    )
+  }
+
   return (
     <div className="movies-page">
       <header className="movies-header">
@@ -105,57 +168,53 @@ function Movies() {
         </div>
       </header>
 
-      <div className="movie-info-list">
-        {
-          movies.map(movie => (
-            <article
-              className="movie-info-row"
-              key={movie.id}
-            >
-              <img
-                src={movie.image}
-                alt={movie.title}
-              />
+      <section className="movie-section">
+        <div className="movie-section-heading">
+          <h2>
+            Showing Now
+          </h2>
 
-              <div className="movie-info-copy">
-                <div className="movie-info-title">
-                  <h2>
-                    {movie.title}
-                  </h2>
+          <span>
+            {showingNow.length} movie{showingNow.length === 1 ? "" : "s"}
+          </span>
+        </div>
 
-                  <span>
-                    {getMovieStatus(movie)}
-                  </span>
-                </div>
+        <div className="movie-info-list">
+          {
+            showingNow.length === 0
+              ? (
+                  <p className="movie-empty-state">
+                    No movies are showing right now.
+                  </p>
+                )
+              : showingNow.map(renderMovieRow)
+          }
+        </div>
+      </section>
 
-                <p>
-                  {movie.genre} · {movie.duration}
-                </p>
+      <section className="movie-section">
+        <div className="movie-section-heading">
+          <h2>
+            Coming Soon
+          </h2>
 
-                <p>
-                  {movie.description}
-                </p>
-              </div>
+          <span>
+            {comingSoon.length} movie{comingSoon.length === 1 ? "" : "s"}
+          </span>
+        </div>
 
-              <div className="movie-info-action">
-                <strong>
-                  {formatNextShowtime(movie)}
-                </strong>
-
-                <button
-                  onClick={() =>
-                    navigate(
-                      `/movies/${movie.id}`,
-                    )
-                  }
-                >
-                  Details
-                </button>
-              </div>
-            </article>
-          ))
-        }
-      </div>
+        <div className="movie-info-list">
+          {
+            comingSoon.length === 0
+              ? (
+                  <p className="movie-empty-state">
+                    No upcoming movies yet.
+                  </p>
+                )
+              : comingSoon.map(renderMovieRow)
+          }
+        </div>
+      </section>
     </div>
   )
 }
