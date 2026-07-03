@@ -1,6 +1,6 @@
 .booking-modal-backdrop {
   align-items: center;
-  background: rgba(0,0,0,.42);
+  background: rgba(19,24,21,.46);
   display: flex;
   inset: 0;
   justify-content: center;
@@ -10,9 +10,10 @@
 }
 
 .booking-modal {
-  background: white;
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,.82);
   border-radius: 8px;
-  box-shadow: 0 18px 55px rgba(0,0,0,.24);
+  box-shadow: 0 24px 70px rgba(18,24,20,.32);
   display: grid;
   gap: 18px;
   max-height: min(720px, calc(100vh - 40px));
@@ -33,12 +34,12 @@
 }
 
 .booking-modal-header p {
-  color: #666;
+  color: var(--muted);
   margin: 0;
 }
 
 .booking-modal-close {
-  background: #f4f4f4;
+  background: var(--surface-soft);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -54,13 +55,17 @@
 
 .booking-modal-showtime {
   align-items: center;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
   display: grid;
   gap: 10px;
   grid-template-columns: 22px 1fr auto;
   padding: 12px;
+}
+
+.booking-modal-showtime:hover {
+  border-color: var(--accent);
 }
 
 .booking-modal-showtime strong {
@@ -74,7 +79,7 @@
 }
 
 .booking-modal-ticket-control input {
-  border: 1px solid #d8d8d8;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font: inherit;
   max-width: 140px;
@@ -82,13 +87,17 @@
 }
 
 .booking-modal-submit {
-  background: #1f1f1f;
+  background: var(--text);
   border: none;
   border-radius: 8px;
   color: white;
   cursor: pointer;
   font-weight: 700;
   padding: 13px 16px;
+}
+
+.booking-modal-submit:hover:not(:disabled) {
+  background: var(--accent-dark);
 }
 
 .booking-modal-submit:disabled {

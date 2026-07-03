@@ -1,0 +1,9 @@
+.app-shell {
+  padding: 34px 28px 56px;
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 24px 16px 44px;
+  }
+}

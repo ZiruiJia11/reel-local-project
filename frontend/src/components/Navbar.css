@@ -1,36 +1,57 @@
 .navbar {
-  height: 72px;
-  padding: 0 48px;
-  background: #1f1f1f;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  min-height: 72px;
+  padding: 0 32px;
+  background: rgba(23,26,24,.94);
   color: white;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(16px);
 }
 
 .navbar-logo {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 850;
+  letter-spacing: 0;
 }
 
 .navbar-links {
+  align-items: center;
   display: flex;
-  gap: 24px;
-  font-size: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 15px;
 }
 
-.navbar-links a:hover {
-  color: #d9a441;
+.navbar-links a,
+.logout-button {
+  border-radius: 8px;
+  color: rgba(255,255,255,.82);
+  padding: 9px 11px;
+}
+
+.navbar-links a:hover,
+.logout-button:hover {
+  background: rgba(255,255,255,.09);
+  color: white;
 }
 
 .logout-button {
   background: transparent;
   border: none;
-  color: white;
   cursor: pointer;
-  font-size: 16px;
+  font: inherit;
 }
 
-.logout-button:hover {
-  color: #d9a441;
+@media (max-width: 720px) {
+  .navbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
 }

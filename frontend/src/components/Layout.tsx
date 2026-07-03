@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import Navbar from "./Navbar"
+import "./Layout.css"
 
 type Props = {
   children: ReactNode
@@ -10,11 +11,7 @@ function Layout({ children }: Props) {
     <>
       <Navbar />
 
-      <main
-        style={{
-          padding: "40px"
-        }}
-      >
+      <main className="app-shell">
         {children}
       </main>
     </>

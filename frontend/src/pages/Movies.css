@@ -6,7 +6,7 @@
 }
 
 .movies-header h1 {
-  font-size: 42px;
+  font-size: clamp(36px, 5vw, 48px);
   margin: 0 0 8px;
 }
 
@@ -38,7 +38,7 @@
 }
 
 .movie-section-heading span {
-  background: #f4f4f4;
+  background: var(--surface-soft);
   border-radius: 8px;
   font-size: 14px;
   font-weight: 700;
@@ -47,18 +47,29 @@
 
 .movie-info-row {
   align-items: center;
-  background: white;
-  border: 1px solid #e8e8e8;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   display: grid;
   gap: 18px;
   grid-template-columns: 92px 1fr 190px;
   padding: 14px;
+  box-shadow: var(--shadow-soft);
+  transition:
+    border-color .16s ease,
+    transform .16s ease,
+    box-shadow .16s ease;
+}
+
+.movie-info-row:hover {
+  border-color: #cad6c6;
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
 }
 
 .movie-empty-state {
-  background: white;
-  border: 1px dashed #d8d8d8;
+  background: var(--surface);
+  border: 1px dashed var(--border);
   border-radius: 8px;
   color: #666;
   margin: 0;
@@ -86,7 +97,7 @@
 }
 
 .movie-info-title span {
-  background: #f4f4f4;
+  background: var(--surface-soft);
   border-radius: 8px;
   font-size: 13px;
   font-weight: 700;
@@ -94,7 +105,7 @@
 }
 
 .movie-info-copy p {
-  color: #666;
+  color: var(--muted);
   line-height: 1.55;
   margin: 0 0 8px;
 }
@@ -111,13 +122,17 @@
 }
 
 .movie-info-action button {
-  background: #1f1f1f;
+  background: var(--text);
   border: none;
   border-radius: 8px;
   color: white;
   cursor: pointer;
   font-weight: 700;
   padding: 11px 14px;
+}
+
+.movie-info-action button:hover {
+  background: var(--accent-dark);
 }
 
 @media (max-width: 760px) {

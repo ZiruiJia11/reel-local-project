@@ -4,26 +4,29 @@
   gap: 48px;
   align-items: start;
   max-width: 1100px;
-  margin: 60px auto;
-  background: white;
-  padding: 40px;
-  border-radius: 18px;
-  box-shadow: 0 8px 30px rgba(0,0,0,.08);
+  margin: 24px auto 60px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 34px;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
 }
 
 .movie-details img {
   width: 100%;
-  border-radius: 14px;
+  border-radius: 8px;
   object-fit: cover;
+  box-shadow: var(--shadow-soft);
 }
 
 .movie-details-content h1 {
-  font-size: 48px;
+  font-size: clamp(36px, 5vw, 54px);
+  line-height: 1.05;
   margin-bottom: 16px;
 }
 
 .movie-meta {
-  color: #d9a441;
+  color: var(--accent-dark);
   font-weight: 700;
   margin-bottom: 24px;
 }
@@ -31,26 +34,26 @@
 .movie-description {
   font-size: 18px;
   line-height: 1.8;
-  color: #555;
+  color: var(--muted);
   margin-bottom: 32px;
 }
 
 .movie-details-content button {
-  background: #1f1f1f;
+  background: var(--text);
   color: white;
   border: none;
   padding: 16px 32px;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
 }
 
 .movie-details-content button:hover {
-  background: #d9a441;
+  background: var(--accent-dark);
 }
 
 .booking-panel {
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border);
   padding-top: 24px;
 }
 
@@ -70,14 +73,14 @@
   grid-template-columns: 24px 1fr auto;
   align-items: center;
   gap: 12px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px 14px;
   cursor: pointer;
 }
 
 .showtime-option strong {
-  color: #1f1f1f;
+  color: var(--text);
   font-size: 14px;
 }
 
